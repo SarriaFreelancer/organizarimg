@@ -1,79 +1,3 @@
-  /* :root{
-    --gap: 10;
-    --pad: 12;
-    --bg: #ffffff;
-    --border: #2b2b2b;
-    --muted: #e9e9e9;
-  }
-  body{
-    font-family: Inter, Roboto, Arial, sans-serif;
-    background: #f6f7fb;
-    padding: 24px;
-    color: #222;
-  }
-  .wrap{
-    max-width: 920px;
-    margin: 0 auto;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 6px 20px rgba(20,30,60,0.08);
-    padding: 18px;
-  }
-  h1{ font-size: 18px; margin: 0 0 12px 0; }
-  form.grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-  .file-box{
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-  }
-  .file-box label{ font-size:13px; }
-  input[type="file"]{
-    padding:6px;
-    font-size:13px;
-  }
-  .controls{
-    margin-top:12px;
-    display:flex;
-    gap:8px;
-    align-items:center;
-  }
-  button {
-    background:#2563eb;
-    color:white;
-    border:0;
-    padding:10px 14px;
-    border-radius:6px;
-    cursor:pointer;
-    font-weight:600;
-  }
-  button.secondary{
-    background:#6b7280;
-  }
-
-.preview-area{
-  margin-top: 16px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-}
-
-canvas{
-  background: white;
-  border: 1px solid #ddd;
-  max-width:100%;
-  height:auto;
-  position: relative;
-  z-index: 2;
-}
-
-  .note{ font-size:13px; color:#555; }
-  footer{ margin-top:10px; font-size:12px; color:#666; } */
-
-
 :root {
   --bg: #f6f7fb;
   --card: #ffffff;
@@ -169,6 +93,7 @@ input[type="file"]:hover {
   display: flex;
   gap: 10px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 button {
@@ -229,4 +154,58 @@ footer {
   margin-top: 14px;
   font-size: 12px;
   color: #666;
+}
+
+/* ============================
+   📱 RESPONSIVE DESIGN
+   ============================ */
+
+/* Tablets */
+@media (max-width: 900px) {
+  form.grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .wrap {
+    padding: 18px;
+  }
+}
+
+/* Celulares grandes */
+@media (max-width: 600px) {
+  form.grid {
+    grid-template-columns: 1fr;
+  }
+
+  h1 {
+    font-size: 18px;
+    text-align: center;
+  }
+
+  button {
+    width: 100%;
+  }
+
+  .controls {
+    flex-direction: column;
+  }
+}
+
+/* Celulares pequeños */
+@media (max-width: 420px) {
+  body {
+    padding: 14px;
+  }
+
+  .wrap {
+    padding: 16px;
+  }
+
+  .file-box label {
+    font-size: 12px;
+  }
+
+  input[type="file"] {
+    font-size: 12px;
+  }
 }
