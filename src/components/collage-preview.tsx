@@ -112,22 +112,14 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
     const [api, setApi] = useState<CarouselApi>();
     const [isClient, setIsClient] = useState(false);
 
-    // This state will only be set on the client side.
     const [timestamp, setTimestamp] = useState('');
 
     useEffect(() => {
         setIsClient(true);
-        // Set timestamp only on the client
         setTimestamp(new Date().toLocaleString('es-ES'));
     }, []);
 
-
-    useImperativeHandle(ref, () => ({
-      getCanvases: () => canvasRefs.current.filter(c => c !== null),
-    }));
-
     const pages = useMemo(() => {
-      if (!isClient) return [];
       const pageData = [];
       for (let i = 0; i < totalPages; i++) {
         const startIndex = i * layout;
@@ -135,10 +127,31 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
         pageData.push(images.slice(startIndex, endIndex));
       }
       return pageData;
-    }, [images, layout, totalPages, isClient]);
+    }, [images, layout, totalPages]);
+
+    useImperativeHandle(ref, () => ({
+      getCanvases: () => {
+        const allCanvases: (HTMLCanvasElement | null)[] = [];
+        if (!isClient) return [];
+
+        for (let i = 0; i < totalPages; i++) {
+          const canvas = document.createElement('canvas');
+          canvas.width = CANVAS_WIDTH;
+          canvas.height = CANVAS_HEIGHT;
+          const ctx = canvas.getContext('2d');
+          const imagesForPage = pages[i];
+          if (ctx && imagesForPage) {
+            drawPage(ctx, imagesForPage, layout, i, timestamp);
+            allCanvases.push(canvas);
+          } else {
+            allCanvases.push(null);
+          }
+        }
+        return allCanvases;
+      },
+    }));
 
     useEffect(() => {
-      // Only draw if we're on the client and pages/timestamp are ready
       if (!isClient || !timestamp) return;
 
       pages.forEach((imagesForPage, i) => {
@@ -165,7 +178,6 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
       api.on("select", handleSelect);
       api.on("reInit", handleReinit);
 
-      // Initial scroll
       if (api.selectedScrollSnap() !== currentPage) {
         api.scrollTo(currentPage, true);
       }
@@ -191,7 +203,6 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
         </Card>
       );
     
-    // Render placeholder on server and on initial client render
     if (!isClient || images.length === 0) {
       return placeholder;
     }
