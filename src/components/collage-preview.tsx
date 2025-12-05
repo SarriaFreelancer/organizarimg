@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useMemo, forwardRef, useImperativeHandle } from 'react';
+import React, { useEffect, useRef, useMemo, forwardRef, useImperativeHandle, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
 import { cn, drawImageCover, drawPlaceholder, roundRect } from '@/lib/utils';
@@ -109,11 +109,13 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
   ({ images, layout, currentPage, onPageChange }, ref) => {
     const totalPages = Math.max(1, Math.ceil(images.length / layout));
     const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
-    const [api, setApi] = React.useState<CarouselApi>();
-    const [timestamp, setTimestamp] = React.useState<string | null>(null);
+    const [api, setApi] = useState<CarouselApi>();
+    const [timestamp, setTimestamp] = useState<string | null>(null);
+    const [isClient, setIsClient] = useState(false);
 
     useEffect(() => {
-        setTimestamp(new Date().toLocaleString('es-ES'));
+      setIsClient(true);
+      setTimestamp(new Date().toLocaleString('es-ES'));
     }, []);
 
     useImperativeHandle(ref, () => ({
@@ -160,8 +162,7 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
       }
     }, [currentPage, api]);
 
-    if (images.length === 0) {
-      return (
+    const placeholder = (
         <Card className="aspect-[1.414/1] w-full flex items-center justify-center bg-muted/50 border-dashed">
           <div className="text-center text-muted-foreground">
               <h3 className="font-headline text-2xl mb-2">Upload photos to begin</h3>
@@ -169,6 +170,13 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
           </div>
         </Card>
       );
+
+    if (!isClient) {
+        return placeholder;
+    }
+    
+    if (images.length === 0) {
+      return placeholder;
     }
 
     return (
