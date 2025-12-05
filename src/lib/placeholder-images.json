@@ -1,3 +1,40 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "sample-1",
+      "description": "A person standing on a mountain peak looking at the view.",
+      "imageUrl": "https://images.unsplash.com/photo-1612441804231-77a36b284856?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxtb3VudGFpbiUyMGxhbmRzY2FwZXxlbnwwfHx8fDE3NjQ3ODUyNDh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "mountain landscape"
+    },
+    {
+      "id": "sample-2",
+      "description": "A close-up of a colorful flower.",
+      "imageUrl": "https://images.unsplash.com/photo-1691315038349-8555d5876fae?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxmbG93ZXIlMjBjbG9zZXVwfGVufDB8fHx8MTc2NDg0NzM4MHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "flower closeup"
+    },
+    {
+      "id": "sample-3",
+      "description": "A bustling city street at night with neon lights.",
+      "imageUrl": "https://images.unsplash.com/photo-1580895456895-cfdf02e4c23f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxjaXR5JTIwbmlnaHR8ZW58MHx8fHwxNzY0ODAzMTQ0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "city night"
+    },
+    {
+      "id": "sample-4",
+      "description": "A serene beach with waves crashing on the shore.",
+      "imageUrl": "https://images.unsplash.com/photo-1610307775401-b6de856aecdf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxiZWFjaCUyMHdhdmVzfGVufDB8fHx8MTc2NDg2Nzc3OHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "beach waves"
+    },
+    {
+      "id": "sample-5",
+      "description": "An architectural detail of a modern building.",
+      "imageUrl": "https://images.unsplash.com/photo-1614595737683-1740e41bfaac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxtb2Rlcm4lMjBhcmNoaXRlY3R1cmV8ZW58MHx8fHwxNzY0ODY2MTU1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "modern architecture"
+    },
+    {
+      "id": "sample-6",
+      "description": "A plate of delicious-looking food at a restaurant.",
+      "imageUrl": "https://images.unsplash.com/photo-1620791144170-8a443bf37a33?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxmb29kJTIwcGxhdGV8ZW58MHx8fHwxNzY0ODQwOTcyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "food plate"
+    }
+  ]
 }
