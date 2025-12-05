@@ -114,7 +114,7 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
 
     useEffect(() => {
         setTimestamp(new Date().toLocaleString('es-ES'));
-    }, [images, layout, currentPage]);
+    }, []);
 
     useImperativeHandle(ref, () => ({
       getCanvases: () => canvasRefs.current.filter(c => c !== null),
