@@ -25,7 +25,8 @@ const drawPage = (
   ctx: CanvasRenderingContext2D,
   imagesForPage: HTMLImageElement[],
   layout: LayoutOptions,
-  pageNumber: number
+  pageNumber: number,
+  timestamp: string | null
 ) => {
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -81,20 +82,20 @@ const drawPage = (
       } else {
         drawPlaceholder(ctx, x, imgContainerY, cellW, imgContainerH, `Imagen ${imageIndexInAll + 1}`);
       }
-
-      const now = new Date();
-      const ts = now.toLocaleString('es-ES');
-      ctx.font = '16px Inter, sans-serif';
-      const tsW = ctx.measureText(ts).width + 16;
-      const tsH = 24;
-      const tsX = x + cellW - tsW - 12;
-      const tsY = y + cellH - tsH - 12;
-      ctx.fillStyle = 'rgba(0,0,0,0.5)';
-      roundRect(ctx, tsX, tsY, tsW, tsH, 6, true, false);
-      ctx.fillStyle = 'rgba(255,255,255,0.95)';
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(ts, tsX + 8, tsY + tsH / 2);
+      
+      if (timestamp) {
+        ctx.font = '16px Inter, sans-serif';
+        const tsW = ctx.measureText(timestamp).width + 16;
+        const tsH = 24;
+        const tsX = x + cellW - tsW - 12;
+        const tsY = y + cellH - tsH - 12;
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        roundRect(ctx, tsX, tsY, tsW, tsH, 6, true, false);
+        ctx.fillStyle = 'rgba(255,255,255,0.95)';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(timestamp, tsX + 8, tsY + tsH / 2);
+      }
     }
   }
 
@@ -109,6 +110,11 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
     const totalPages = Math.max(1, Math.ceil(images.length / layout));
     const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
     const [api, setApi] = React.useState<CarouselApi>();
+    const [timestamp, setTimestamp] = React.useState<string | null>(null);
+
+    useEffect(() => {
+        setTimestamp(new Date().toLocaleString('es-ES'));
+    }, [images, layout, currentPage]);
 
     useImperativeHandle(ref, () => ({
       getCanvases: () => canvasRefs.current.filter(c => c !== null),
@@ -130,11 +136,11 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
         if (canvas) {
           const ctx = canvas.getContext('2d');
           if (ctx) {
-            drawPage(ctx, imagesForPage, layout, i);
+            drawPage(ctx, imagesForPage, layout, i, timestamp);
           }
         }
       });
-    }, [pages, layout, images]);
+    }, [pages, layout, images, timestamp]);
 
     useEffect(() => {
       if (!api) return;
