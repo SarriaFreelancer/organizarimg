@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useTransition } from 'react';
 import Image from 'next/image';
-import { getLayoutRecommendation } from '@/app/actions';
+import { getLayoutRecommendation, generateDocx } from '@/app/actions';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -13,9 +13,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { UploadCloud, Image as ImageIcon, Sparkles, Trash2, Download, Loader2, ArrowLeft, ArrowRight, Wand2 } from 'lucide-react';
 import Header from '@/components/header';
 import CollagePreview, { type CollagePreviewHandles } from '@/components/collage-preview';
-import { Packer } from 'docx';
 import { saveAs } from 'file-saver';
-import { createDocument } from '@/lib/docx-generator';
 
 type LayoutOptions = 2 | 4 | 6;
 
@@ -132,8 +130,10 @@ export default function Home() {
 
     try {
       const canvases = collagePreviewRef.current.getCanvases();
-      const doc = await createDocument(canvases);
-      const blob = await Packer.toBlob(doc);
+      const canvasData = canvases.map(canvas => canvas?.toDataURL('image/png'));
+      
+      const blob = await generateDocx(canvasData);
+      
       saveAs(blob, 'Photo-Mosaic.docx');
       toast({ title: 'Download complete!', description: 'Your document has been saved.' });
     } catch (error) {

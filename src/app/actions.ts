@@ -1,7 +1,8 @@
-// src/app/actions.ts
 "use server";
 
 import { recommendImageLayout } from "@/ai/flows/ai-powered-layout-recommendation";
+import { createDocument } from "@/lib/docx-generator";
+import { Packer } from "docx";
 
 export async function getLayoutRecommendation(photoCount: number): Promise<2 | 4 | 6 | null> {
   if (photoCount === 0) {
@@ -21,4 +22,10 @@ export async function getLayoutRecommendation(photoCount: number): Promise<2 | 4
     if (photoCount <= 8) return 4;
     return 6;
   }
+}
+
+export async function generateDocx(canvasDataUrls: (string | undefined)[]): Promise<Blob> {
+  const doc = await createDocument(canvasDataUrls);
+  const blob = await Packer.toBlob(doc);
+  return blob;
 }

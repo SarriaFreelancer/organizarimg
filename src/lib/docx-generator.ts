@@ -3,32 +3,16 @@ import { Document, Packer, ImageRun, Paragraph, PageBreak, PageNumber, Alignment
 const A4_WIDTH_POINTS = 595.28;
 const A4_HEIGHT_POINTS = 841.89;
 
-async function canvasToBuffer(canvas: HTMLCanvasElement): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-        canvas.toBlob((blob) => {
-            if (!blob) {
-                reject(new Error("Failed to create blob from canvas"));
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = () => {
-                if (reader.result instanceof ArrayBuffer) {
-                    resolve(Buffer.from(reader.result));
-                } else {
-                    reject(new Error("Failed to read canvas blob as ArrayBuffer"));
-                }
-            };
-            reader.onerror = (error) => reject(error);
-            reader.readAsArrayBuffer(blob);
-        }, 'image/png');
-    });
+function dataUrlToBuffer(dataUrl: string): Buffer {
+    const base64 = dataUrl.split(',')[1];
+    return Buffer.from(base64, 'base64');
 }
 
 
-export async function createDocument(canvases: (HTMLCanvasElement | null)[]): Promise<Document> {
-    const imageBuffers = await Promise.all(
-        canvases.filter((c): c is HTMLCanvasElement => c !== null).map(canvasToBuffer)
-    );
+export async function createDocument(canvasDataUrls: (string | undefined)[]): Promise<Document> {
+    const imageBuffers = canvasDataUrls
+        .filter((dataUrl): dataUrl is string => typeof dataUrl === 'string')
+        .map(dataUrlToBuffer);
 
     const doc = new Document({
         sections: imageBuffers.map((buffer, index) => ({
@@ -54,14 +38,10 @@ export async function createDocument(canvases: (HTMLCanvasElement | null)[]): Pr
             },
             footers: {
                 default: new Paragraph({
+                    alignment: AlignmentType.CENTER,
                     children: [
-                        new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            children: [
-                                new PageNumber({
-                                    format: "página {current} de {total}",
-                                }),
-                            ],
+                        new PageNumber({
+                            format: "página {current} de {total}",
                         }),
                     ],
                 }),
