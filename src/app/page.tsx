@@ -12,7 +12,10 @@ import { useToast } from '@/hooks/use-toast';
 import { AnimatePresence, motion } from 'framer-motion';
 import { UploadCloud, Image as ImageIcon, Sparkles, Trash2, Download, Loader2, ArrowLeft, ArrowRight, Wand2 } from 'lucide-react';
 import Header from '@/components/header';
-import CollagePreview from '@/components/collage-preview';
+import CollagePreview, { type CollagePreviewHandles } from '@/components/collage-preview';
+import { Packer } from 'docx';
+import { saveAs } from 'file-saver';
+import { createDocument } from '@/lib/docx-generator';
 
 type LayoutOptions = 2 | 4 | 6;
 
@@ -23,8 +26,10 @@ export default function Home() {
   const [recommendedLayout, setRecommendedLayout] = useState<LayoutOptions | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const collagePreviewRef = useRef<CollagePreviewHandles>(null);
   const [isPending, startTransition] = useTransition();
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const { toast } = useToast();
 
   const isCreating = images.length > 0;
@@ -120,6 +125,25 @@ export default function Home() {
     setRecommendedLayout(null);
   };
 
+  const handleDownload = async () => {
+    if (!collagePreviewRef.current) return;
+    setIsDownloading(true);
+    toast({ title: 'Generating document...', description: 'This may take a moment.' });
+
+    try {
+      const canvases = collagePreviewRef.current.getCanvases();
+      const doc = await createDocument(canvases);
+      const blob = await Packer.toBlob(doc);
+      saveAs(blob, 'Photo-Mosaic.docx');
+      toast({ title: 'Download complete!', description: 'Your document has been saved.' });
+    } catch (error) {
+      console.error("Error generating document:", error);
+      toast({ variant: 'destructive', title: 'Download failed', description: 'Could not generate the document.' });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   const MemoizedCollagePreview = React.memo(CollagePreview);
 
   const HeroSection = () => (
@@ -187,8 +211,9 @@ export default function Home() {
         </Card>
 
         <Card className="p-6 flex flex-col gap-4">
-           <Button size="lg" disabled>
-            <Download className="mr-2" /> Download Collage
+           <Button size="lg" onClick={handleDownload} disabled={isDownloading}>
+            {isDownloading ? <Loader2 className="mr-2 animate-spin" /> : <Download className="mr-2" />}
+            {isDownloading ? 'Generating...' : 'Download Collage'}
           </Button>
           <Button size="lg" variant="secondary" onClick={resetApp}>
             Start Over
@@ -217,7 +242,8 @@ export default function Home() {
             exit={{ opacity: 0, scale: 0.98 }}
             transition={{ duration: 0.3 }}
           >
-            <MemoizedCollagePreview
+            <CollagePreview
+              ref={collagePreviewRef}
               images={loadedImages}
               layout={layout}
               currentPage={currentPage}
