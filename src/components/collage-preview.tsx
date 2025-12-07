@@ -102,7 +102,7 @@ const drawPage = (
   ctx.fillStyle = '#111827';
   ctx.font = '24px "Space Grotesk", sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('Photo Mosaic - Generado', CANVAS_WIDTH / 2, CANVAS_HEIGHT - 30);
+  ctx.fillText('Mosaico de Fotos - Generado', CANVAS_WIDTH / 2, CANVAS_HEIGHT - 30);
 };
 
 const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
@@ -163,7 +163,7 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
           }
         }
       });
-    }, [pages, layout, images, timestamp, isClient]);
+    }, [pages, layout, images, timestamp, isClient, currentPage]);
 
     useEffect(() => {
       if (!api) return;
@@ -197,8 +197,8 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
     const placeholder = (
         <Card className="aspect-[1.414/1] w-full flex items-center justify-center bg-muted/50 border-dashed">
           <div className="text-center text-muted-foreground">
-              <h3 className="font-headline text-2xl mb-2">Upload photos to begin</h3>
-              <p>Your beautiful collage will appear here.</p>
+              <h3 className="font-headline text-2xl mb-2">Sube fotos para empezar</h3>
+              <p>Tu hermoso collage aparecerá aquí.</p>
           </div>
         </Card>
       );

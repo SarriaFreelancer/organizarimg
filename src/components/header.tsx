@@ -9,7 +9,7 @@ const Header = () => {
       <div className="flex items-center gap-3">
         <Frame className="h-7 w-7 text-primary" />
         <h1 className="font-headline text-xl font-bold tracking-tight">
-          Photo Mosaic Generator
+          Generador de Mosaicos
         </h1>
       </div>
     </header>

@@ -16,8 +16,8 @@ export async function getLayoutRecommendation(photoCount: number): Promise<2 | 4
     }
     return null;
   } catch (error) {
-    console.error("Error fetching layout recommendation:", error);
-    // In case of an AI error, we can return a sensible default or null
+    console.error("Error al obtener la recomendación de diseño:", error);
+    // En caso de un error de la IA, podemos devolver un valor predeterminado o nulo
     if (photoCount <= 4) return 2;
     if (photoCount <= 8) return 4;
     return 6;

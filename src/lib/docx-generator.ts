@@ -52,8 +52,8 @@ export async function createDocument(canvasDataUrls: (string | undefined)[]): Pr
                         new ImageRun({
                             data: buffer,
                             transformation: {
-                                width: A4_HEIGHT_POINTS - 1440 / 20, // A4 landscape height in points minus margins
-                                height: A4_WIDTH_POINTS - 1440 / 20, // A4 landscape width in points minus margins
+                                width: A4_HEIGHT_POINTS - 1440 / 20,
+                                height: A4_WIDTH_POINTS - 1440 / 20,
                             },
                         }),
                     ],
