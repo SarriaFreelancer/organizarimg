@@ -4,15 +4,6 @@ const nextConfig: NextConfig = {
   serverActions: {
     bodySizeLimit: '50mb',
   },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  devIndicators: {
-    allowedDevOrigins: ['https://*.cloudworkstations.dev'],
-  },
   images: {
     remotePatterns: [
       {

@@ -71,7 +71,7 @@ export default function Home() {
           if (recommendation && [2, 4, 6].includes(recommendation)) {
             const recommended = recommendation as LayoutOptions;
             setRecommendedLayout(recommended);
-setLayout(recommended);
+            setLayout(recommended);
             toast({
               title: "Sugerencia de la IA",
               description: `Sugerimos un diseño de ${recommended} fotos para tus ${images.length} imágenes.`,
@@ -143,8 +143,6 @@ setLayout(recommended);
       setIsDownloading(false);
     }
   };
-
-  const MemoizedCollagePreview = React.memo(CollagePreview);
 
   const HeroSection = () => (
     <div className="text-center flex flex-col items-center justify-center min-h-[calc(100vh-200px)] p-8">
