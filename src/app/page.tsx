@@ -96,7 +96,7 @@ export default function Home() {
       setRecommendedLayout(null);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedImageCount]);
+  }, [debouncedImageCount, toast]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
@@ -143,12 +143,14 @@ export default function Home() {
 
     try {
         const sections: docx.ISectionOptions[] = [];
-        const A4_LANDSCAPE_WIDTH_TWIPS = 16838;
-        const A4_LANDSCAPE_HEIGHT_TWIPS = 11906;
-        const MARGIN_TWIPS = 720; // 0.5 inch = 36 points = 720 twips
+        const A4_WIDTH_TWIPS = 11906;
+        const A4_HEIGHT_TWIPS = 16838;
+        const MARGIN_TWIPS = 720; // 0.5 inch
 
-        const IMAGE_WIDTH_TWIPS = A4_LANDSCAPE_WIDTH_TWIPS - MARGIN_TWIPS * 2; // ~27cm
-        const IMAGE_HEIGHT_TWIPS = A4_LANDSCAPE_HEIGHT_TWIPS - MARGIN_TWIPS * 2; // ~18.8cm
+        // 27cm to twips -> 27 * 567 = 15309
+        // 18.8cm to twips -> 18.8 * 567 = 10659.6
+        const IMAGE_WIDTH_TWIPS = 15309;
+        const IMAGE_HEIGHT_TWIPS = 10660;
 
         for (let i = 0; i < totalPages; i++) {
             update({
@@ -178,8 +180,8 @@ export default function Home() {
                         page: {
                             margin: { top: MARGIN_TWIPS, right: MARGIN_TWIPS, bottom: MARGIN_TWIPS, left: MARGIN_TWIPS },
                             size: {
-                                width: A4_LANDSCAPE_WIDTH_TWIPS,
-                                height: A4_LANDSCAPE_HEIGHT_TWIPS,
+                                width: A4_HEIGHT_TWIPS,
+                                height: A4_WIDTH_TWIPS,
                                 orientation: docx.PageOrientation.LANDSCAPE,
                             },
                         },
@@ -383,5 +385,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
