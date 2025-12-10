@@ -105,7 +105,7 @@ export default function Home() {
       setIsAiLoading(true);
       startTransition(async () => {
         const recommendation = await getLayoutRecommendation(debouncedImageCount);
-        if (recommendation && recommendation !== recommendedLayout) {
+        if (recommendation && recommendation !== layout) {
           setRecommendedLayout(recommendation);
           setLayout(recommendation);
           toast({
@@ -119,7 +119,7 @@ export default function Home() {
       setRecommendedLayout(null);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedImageCount, toast]);
+  }, [debouncedImageCount]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
@@ -360,3 +360,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
