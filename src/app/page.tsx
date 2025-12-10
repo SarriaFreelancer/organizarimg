@@ -14,7 +14,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { UploadCloud, Image as ImageIcon, Sparkles, Trash2, Download, Loader2, ArrowLeft, ArrowRight, Wand2 } from 'lucide-react';
 import Header from '@/components/header';
 import CollagePreview, { type CollagePreviewHandles } from '@/components/collage-preview';
-import { saveAs } from 'file-saver';
 import { generateFullDocx } from '@/lib/client-docx-generator';
 
 type LayoutOptions = 2 | 4 | 6;
@@ -144,8 +143,16 @@ export default function Home() {
   
       if (canvasDataUrls.length > 0) {
         const blob = await generateFullDocx(canvasDataUrls);
-        saveAs(blob, 'Mosaico-de-Fotos.docx');
-  
+        
+        // Create a link and trigger the download
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'Mosaico-de-Fotos.docx';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+
         toast({ 
           id: toastId,
           title: '¡Descarga completa!', 
@@ -304,5 +311,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
