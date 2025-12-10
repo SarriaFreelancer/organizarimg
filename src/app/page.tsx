@@ -15,7 +15,7 @@ import { UploadCloud, Image as ImageIcon, Sparkles, Trash2, Download, Loader2, A
 import Header from '@/components/header';
 import CollagePreview, { type CollagePreviewHandles } from '@/components/collage-preview';
 import { createDocumentSection } from '@/lib/docx-generator';
-import { Document, Packer, ISectionOptions, Paragraph } from 'docx';
+import { Document, Packer, ISectionOptions } from 'docx';
 
 type LayoutOptions = 2 | 4 | 6;
 
@@ -159,7 +159,6 @@ export default function Home() {
             description: 'Ensamblando archivo final...',
           });
   
-          // Use the properties from the first section for the whole document
           const doc = new Document({
             sections: sections,
           });
