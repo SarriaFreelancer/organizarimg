@@ -46,3 +46,5 @@ export function createDocumentSection(imageBuffer: ArrayBuffer): ISectionOptions
         ],
     };
 }
+
+    
