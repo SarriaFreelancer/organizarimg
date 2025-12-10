@@ -14,7 +14,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { UploadCloud, Image as ImageIcon, Sparkles, Trash2, Download, Loader2, ArrowLeft, ArrowRight, Wand2 } from 'lucide-react';
 import Header from '@/components/header';
 import CollagePreview, { type CollagePreviewHandles } from '@/components/collage-preview';
-import { createDocumentSection } from '@/lib/docx-generator';
+import { createDocumentSectionChildren } from '@/lib/docx-generator';
 import * as docx from 'docx';
 
 type LayoutOptions = 2 | 4 | 6;
@@ -96,7 +96,8 @@ export default function Home() {
     } else {
       setRecommendedLayout(null);
     }
-  }, [debouncedImageCount, layout, toast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedImageCount]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
@@ -142,7 +143,8 @@ export default function Home() {
     });
   
     try {
-        const sections: docx.ISectionOptions[] = [];
+        const docChildren: (docx.Paragraph | docx.Table)[] = [];
+
         for (let i = 0; i < totalPages; i++) {
           update({
             id: toastId,
@@ -152,20 +154,53 @@ export default function Home() {
           const dataUrl = collagePreviewRef.current.getCanvasDataUrl(i);
           if (dataUrl) {
             const imageBuffer = dataUrlToArrayBuffer(dataUrl);
-            const section = createDocumentSection(imageBuffer);
-            sections.push(section);
+            const pageChildren = createDocumentSectionChildren(imageBuffer);
+            docChildren.push(...pageChildren);
+            if (i < totalPages - 1) {
+              docChildren.push(new docx.Paragraph({ children: [new docx.PageBreak()] }));
+            }
           }
         }
     
-        if (sections.length > 0) {
+        if (docChildren.length > 0) {
           update({
             id: toastId,
             title: 'Generando documento...',
             description: 'Ensamblando archivo final...',
           });
+          
+          const A4_LANDSCAPE_WIDTH_TWIPS = 16838;
+          const A4_LANDSCAPE_HEIGHT_TWIPS = 11906;
+          const margin = 720;
   
           const doc = new docx.Document({
-            sections: sections,
+            sections: [{
+                properties: {
+                    page: {
+                        margin: { top: margin, right: margin, bottom: margin, left: margin },
+                        size: { 
+                            width: A4_LANDSCAPE_WIDTH_TWIPS, 
+                            height: A4_LANDSCAPE_HEIGHT_TWIPS, 
+                            orientation: 'landscape',
+                        },
+                    },
+                },
+                footers: {
+                  default: new docx.Footer({
+                      children: [
+                          new docx.Paragraph({
+                              alignment: 'right',
+                              children: [
+                                  new docx.TextRun({
+                                      children: ["Página ", docx.PageNumber.CURRENT, " de ", docx.PageNumber.TOTAL_PAGES],
+                                  }),
+                              ],
+                          }),
+                      ],
+                  }),
+              },
+                children: docChildren,
+            }],
           });
   
           const finalBlob = await docx.Packer.toBlob(doc);
@@ -336,5 +371,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
