@@ -14,8 +14,7 @@ import { UploadCloud, Image as ImageIcon, Sparkles, Trash2, Download, Loader2, A
 import Header from '@/components/header';
 import CollagePreview, { type CollagePreviewHandles } from '@/components/collage-preview';
 import { saveAs } from 'file-saver';
-import { Document, Packer } from 'docx';
-import { A4_HEIGHT_POINTS, A4_WIDTH_POINTS } from '@/lib/docx-generator';
+import { Document, Packer, ISectionOptions } from 'docx';
 
 type LayoutOptions = 2 | 4 | 6;
 
@@ -135,7 +134,7 @@ export default function Home() {
 
     try {
       const canvasDataUrls = collagePreviewRef.current.getAllCanvasDataUrls();
-      const sections = [];
+      const sections: ISectionOptions[] = [];
 
       for (let i = 0; i < canvasDataUrls.length; i++) {
         toast({
@@ -146,21 +145,25 @@ export default function Home() {
 
         const dataUrl = canvasDataUrls[i];
         if (dataUrl) {
+          // Call server action for each page
           const section = await generateDocxPage(dataUrl, i, canvasDataUrls.length);
           sections.push(section);
         }
       }
+      
+      if (sections.length > 0) {
+        const doc = new Document({ sections });
+        const blob = await Packer.toBlob(doc);
+        saveAs(blob, 'Mosaico-de-Fotos.docx');
 
-      const doc = new Document({ sections });
-      const blob = await Packer.toBlob(doc);
-      
-      saveAs(blob, 'Mosaico-de-Fotos.docx');
-      
-      toast({ 
-        id: toastId,
-        title: '¡Descarga completa!', 
-        description: 'Tu documento ha sido guardado.' 
-      });
+        toast({ 
+          id: toastId,
+          title: '¡Descarga completa!', 
+          description: 'Tu documento ha sido guardado.' 
+        });
+      } else {
+         throw new Error("No se pudo generar ninguna página del documento.");
+      }
 
     } catch (error) {
       console.error("Error generando el documento:", error);
@@ -168,11 +171,11 @@ export default function Home() {
         id: toastId,
         variant: 'destructive', 
         title: 'Falló la descarga', 
-        description: 'No se pudo generar el documento.' 
+        description: error instanceof Error ? error.message : 'No se pudo generar el documento.' 
       });
     } finally {
       setIsDownloading(false);
-       setTimeout(() => dismiss(toastId), 3000);
+       setTimeout(() => dismiss(toastId), 5000);
     }
   };
 
