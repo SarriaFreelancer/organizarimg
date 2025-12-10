@@ -148,9 +148,6 @@ export default function Home() {
         const PAGE_HEIGHT = 11906;
         const MARGIN_TWIPS = 720;
         
-        const IMAGE_WIDTH_TWIPS = 15309;
-        const IMAGE_HEIGHT_TWIPS = 10659;
-
         for (let i = 0; i < totalPages; i++) {
             update({
                 id: toastId,
@@ -159,16 +156,33 @@ export default function Home() {
             });
             const dataUrl = collagePreviewRef.current.getCanvasDataUrl(i);
             if (dataUrl) {
+                const img = new Image();
+                img.src = dataUrl;
+                await new Promise((resolve) => (img.onload = resolve));
+            
+                const naturalWidth = img.width;
+                const naturalHeight = img.height;
+            
+                const maxWidth = PAGE_WIDTH - MARGIN_TWIPS * 2;
+                const maxHeight = PAGE_HEIGHT - MARGIN_TWIPS * 2;
+            
+                const widthRatio = maxWidth / naturalWidth;
+                const heightRatio = maxHeight / naturalHeight;
+                const scaleFactor = Math.min(widthRatio, heightRatio);
+            
+                const finalWidth = naturalWidth * scaleFactor;
+                const finalHeight = naturalHeight * scaleFactor;
+            
                 const imageBuffer = dataUrlToArrayBuffer(dataUrl);
-                
+
                 const imageParagraph = new docx.Paragraph({
                     alignment: docx.AlignmentType.CENTER,
                     children: [
                         new docx.ImageRun({
                             data: imageBuffer,
                             transformation: {
-                                width: IMAGE_WIDTH_TWIPS,
-                                height: IMAGE_HEIGHT_TWIPS,
+                                width: finalWidth,
+                                height: finalHeight,
                             },
                         }),
                     ],
