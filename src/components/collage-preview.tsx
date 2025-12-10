@@ -19,8 +19,8 @@ export interface CollagePreviewHandles {
   getCanvasDataUrl: (pageIndex: number) => string | null;
 }
 
-const CANVAS_WIDTH = 1754;
-const CANVAS_HEIGHT = 1240;
+const CANVAS_WIDTH = 842;
+const CANVAS_HEIGHT = 595;
 
 const drawPage = (
   ctx: CanvasRenderingContext2D,
@@ -34,11 +34,11 @@ const drawPage = (
 
   const cols = layout === 2 ? 2 : (layout === 4 ? 2 : 3);
   const rows = layout === 2 ? 1 : 2;
-  const gap = 24;
-  const leftPad = 42;
-  const topPad = 40;
-  const rightPad = 42;
-  const bottomPad = 80;
+  const gap = 12;
+  const leftPad = 20;
+  const topPad = 20;
+  const rightPad = 20;
+  const bottomPad = 40;
 
   const gridW = CANVAS_WIDTH - leftPad - rightPad;
   const gridH = CANVAS_HEIGHT - topPad - bottomPad;
@@ -60,20 +60,20 @@ const drawPage = (
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(x, y, cellW, cellH);
       ctx.strokeStyle = '#bdbdbd';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 1;
       ctx.strokeRect(x + 0.5, y + 0.5, cellW - 1, cellH - 1);
 
-      const titleHeight = 56;
+      const titleHeight = 28;
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(x, y, cellW, titleHeight);
       ctx.strokeStyle = '#444';
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 0.5;
       ctx.strokeRect(x + 0.5, y + 0.5, cellW - 1, titleHeight - 1);
       ctx.fillStyle = '#111827';
-      ctx.font = '22px Inter, sans-serif';
+      ctx.font = '12px Inter, sans-serif';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(`Registro Fotográfico N°${imageIndexInAll + 1}`, x + 18, y + titleHeight / 2);
+      ctx.fillText(`Registro Fotográfico N°${imageIndexInAll + 1}`, x + 9, y + titleHeight / 2);
 
       const imgContainerY = y + titleHeight;
       const imgContainerH = cellH - titleHeight;
@@ -85,25 +85,25 @@ const drawPage = (
       }
       
       if (timestamp) {
-        ctx.font = '16px Inter, sans-serif';
-        const tsW = ctx.measureText(timestamp).width + 16;
-        const tsH = 24;
-        const tsX = x + cellW - tsW - 12;
-        const tsY = y + cellH - tsH - 12;
+        ctx.font = '8px Inter, sans-serif';
+        const tsW = ctx.measureText(timestamp).width + 8;
+        const tsH = 12;
+        const tsX = x + cellW - tsW - 6;
+        const tsY = y + cellH - tsH - 6;
         ctx.fillStyle = 'rgba(0,0,0,0.5)';
-        roundRect(ctx, tsX, tsY, tsW, tsH, 6, true, false);
+        roundRect(ctx, tsX, tsY, tsW, tsH, 3, true, false);
         ctx.fillStyle = 'rgba(255,255,255,0.95)';
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
-        ctx.fillText(timestamp, tsX + 8, tsY + tsH / 2);
+        ctx.fillText(timestamp, tsX + 4, tsY + tsH / 2);
       }
     }
   }
 
   ctx.fillStyle = '#111827';
-  ctx.font = '24px "Space Grotesk", sans-serif';
+  ctx.font = '12px "Space Grotesk", sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('Mosaico de Fotos - Generado', CANVAS_WIDTH / 2, CANVAS_HEIGHT - 30);
+  ctx.fillText('Mosaico de Fotos - Generado', CANVAS_WIDTH / 2, CANVAS_HEIGHT - 15);
 };
 
 const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
@@ -151,12 +151,12 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
         if (canvas) {
           const ctx = canvas.getContext('2d');
           if (ctx) {
-            const timestamp = new Date().toLocaleString('es-ES');
-            drawPage(ctx, imagesForPage, layout, i, timestamp);
+            // Passing null for timestamp, it will be added on download
+            drawPage(ctx, imagesForPage, layout, i, null);
           }
         }
       });
-    }, [pages, layout, images, isClient, currentPage]);
+    }, [pages, layout, images, isClient]);
 
     useEffect(() => {
       if (!api) return;
@@ -211,7 +211,7 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
                     ref={el => canvasRefs.current[index] = el}
                     width={CANVAS_WIDTH}
                     height={CANVAS_HEIGHT}
-                    className="w-full h-auto aspect-[1754/1240]"
+                    className="w-full h-auto aspect-[842/595]"
                   />
                 </CardContent>
               </Card>

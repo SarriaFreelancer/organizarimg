@@ -5,8 +5,6 @@ export function createDocumentSection(imageBuffer: ArrayBuffer): docx.ISectionOp
     const A4_LANDSCAPE_WIDTH_TWIPS = 16838;
     const A4_LANDSCAPE_HEIGHT_TWIPS = 11906;
     const margin = 720; // 0.5 inch in twips
-    const availableWidth = A4_LANDSCAPE_WIDTH_TWIPS - (margin * 2);
-    const availableHeight = A4_LANDSCAPE_HEIGHT_TWIPS - (margin * 2);
 
     return {
         properties: {
@@ -40,8 +38,8 @@ export function createDocumentSection(imageBuffer: ArrayBuffer): docx.ISectionOp
                     new docx.ImageRun({
                         data: imageBuffer,
                         transformation: {
-                            width: availableWidth,
-                            height: availableHeight,
+                            width: A4_LANDSCAPE_WIDTH_TWIPS - (margin * 2),
+                            height: A4_LANDSCAPE_HEIGHT_TWIPS - (margin * 2),
                         },
                     }),
                 ],
