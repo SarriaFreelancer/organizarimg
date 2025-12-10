@@ -156,7 +156,7 @@ export default function Home() {
             });
             const dataUrl = collagePreviewRef.current.getCanvasDataUrl(i);
             if (dataUrl) {
-                const img = new Image();
+                const img = new window.Image();
                 img.src = dataUrl;
                 await new Promise((resolve) => (img.onload = resolve));
             
@@ -397,5 +397,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
