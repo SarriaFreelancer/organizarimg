@@ -143,13 +143,16 @@ export default function Home() {
     try {
       const sections: docx.ISectionOptions[] = [];
   
-      // Valores Word en TWIPS (1 in = 1440 twips)
-      const PAGE_WIDTH_TWIPS = 16838;   // A4 landscape width (11.69 in * 1440)
-      const PAGE_HEIGHT_TWIPS = 11906;  // A4 landscape height (8.27 in * 1440)
-      const MARGIN_TWIPS = 720;         // 0.5 in margins (ajusta si quieres distinto)
+      // TWIPS (Word units)
+      const PAGE_WIDTH_TWIPS = 16838;   // A4 landscape total width
+      const PAGE_HEIGHT_TWIPS = 11906;  // A4 landscape total height
+      const MARGIN_TWIPS = 720;         // 0.5 in
   
-      // Ancho usable dentro de márgenes
       const usableWidthTwips = PAGE_WIDTH_TWIPS - MARGIN_TWIPS * 2;
+      const usableHeightTwips = PAGE_HEIGHT_TWIPS - MARGIN_TWIPS * 2;
+  
+      // factor para convertir TWIPS -> PIXELES (96 DPI)
+      const TWIPS_TO_PX = 96 / 1440; // = 0.0666666667
   
       for (let i = 0; i < totalPages; i++) {
         update({
@@ -161,43 +164,40 @@ export default function Home() {
         const dataUrl = collagePreviewRef.current.getCanvasDataUrl(i);
         if (!dataUrl) continue;
   
-        // --- diagnóstico: opcional, útil para debug
+        // diagnostico: dimensiones del PNG generado por el canvas
         const img = new window.Image();
         img.src = dataUrl;
         await new Promise((resolve) => (img.onload = resolve));
-        console.log(`Page ${i}: image pixels: ${img.width} x ${img.height}`);
+        console.log(`Page ${i}: image pixels (canvas PNG) = ${img.width} x ${img.height}`);
+        console.log("usableWidthTwips:", usableWidthTwips, "usableHeightTwips:", usableHeightTwips);
   
-        // Convierte el DataURL a ArrayBuffer listo para docx
-        const imageBuffer = dataUrlToArrayBuffer(dataUrl);
+        // conversión: ancho imprimible en PIXELES
+        const usableWidthPx = Math.round(usableWidthTwips * TWIPS_TO_PX);
+        const usableHeightPx = Math.round(usableHeightTwips * TWIPS_TO_PX);
+        console.log("usable printable px:", usableWidthPx, "x", usableHeightPx);
   
-        // Calcula tamaño objetivo en TWIPS
-        // Escalamos al ANCHO imprimible (usableWidthTwips) y mantenemos la proporción
+        // calcular tamaño objetivo en px manteniendo aspecto del canvas PNG
         const aspect = img.height / img.width;
-        const targetWidthTwips = Math.round(usableWidthTwips);
-        const targetHeightTwips = Math.round(targetWidthTwips * aspect);
+        let targetWidthPx = usableWidthPx;
+        let targetHeightPx = Math.round(targetWidthPx * aspect);
   
-        let finalW, finalH;
-
-        // Si quieres limitar por altura imprimible:
-        const maxHeightTwips = PAGE_HEIGHT_TWIPS - MARGIN_TWIPS * 2;
-        if (targetHeightTwips > maxHeightTwips) {
-          // si altura resultante excede el máximo, escala por altura en su lugar
-          const finalHeightTwips = maxHeightTwips;
-          const finalWidthTwips = Math.round(finalHeightTwips / aspect);
-          // reasignar
-          finalW = finalWidthTwips;
-          finalH = finalHeightTwips;
-        } else {
-          finalW = targetWidthTwips;
-          finalH = targetHeightTwips;
+        // si excede altura imprimible en px, escalar por altura en su lugar
+        if (targetHeightPx > usableHeightPx) {
+          targetHeightPx = usableHeightPx;
+          targetWidthPx = Math.round(targetHeightPx / aspect);
         }
   
-        // Crea el ImageRun con las dimensiones en TWIPS
+        console.log("target px for docx:", targetWidthPx, "x", targetHeightPx);
+  
+        // ArrayBuffer listo para docx (dataUrl => ArrayBuffer)
+        const imageBuffer = dataUrlToArrayBuffer(dataUrl);
+  
         const imageRun = new docx.ImageRun({
           data: imageBuffer,
           transformation: {
-            width: finalW,
-            height: finalH,
+            // PASAR píxeles (no twips)
+            width: targetWidthPx,
+            height: targetHeightPx,
           },
         });
   
@@ -255,6 +255,7 @@ export default function Home() {
       setTimeout(() => dismiss(toastId), 5000);
     }
   };
+  
 
 
   const HeroSection = () => (

@@ -99,11 +99,6 @@ const drawPage = (
       }
     }
   }
-
-  ctx.fillStyle = '#111827';
-  ctx.font = '12px "Space Grotesk", sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('Mosaico de Fotos - Generado', CANVAS_WIDTH / 2, CANVAS_HEIGHT - 15);
 };
 
 const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
