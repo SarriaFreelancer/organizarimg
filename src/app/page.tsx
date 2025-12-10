@@ -3,7 +3,7 @@
 
 import React, { useState, useRef, useEffect, useTransition } from 'react';
 import Image from 'next/image';
-import { getLayoutRecommendation } from '@/app/actions';
+import { getLayoutRecommendation, generateDocxPage } from '@/app/actions';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -14,7 +14,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { UploadCloud, Image as ImageIcon, Sparkles, Trash2, Download, Loader2, ArrowLeft, ArrowRight, Wand2 } from 'lucide-react';
 import Header from '@/components/header';
 import CollagePreview, { type CollagePreviewHandles } from '@/components/collage-preview';
-import { generateFullDocx } from '@/lib/client-docx-generator';
+import { mergeDocx } from '@/lib/client-docx-generator';
 
 type LayoutOptions = 2 | 4 | 6;
 
@@ -127,33 +127,44 @@ export default function Home() {
   const handleDownload = async () => {
     if (!collagePreviewRef.current || loadedImages.length === 0) return;
     setIsDownloading(true);
-    const { id: toastId } = toast({
+    const { id: toastId, update } = toast({
       title: 'Generando documento...',
-      description: `Preparando ${totalPages} página(s).`,
+      description: 'Paso 1 de 2: Preparando páginas...',
     });
   
     try {
-      const canvasDataUrls: string[] = [];
+      const docxPagesB64: string[] = [];
       for (let i = 0; i < totalPages; i++) {
         const dataUrl = collagePreviewRef.current.getCanvasDataUrl(i);
         if (dataUrl) {
-          canvasDataUrls.push(dataUrl);
+          update({
+            id: toastId,
+            title: 'Generando documento...',
+            description: `Procesando página ${i + 1} de ${totalPages}...`,
+          });
+          const docxPageB64 = await generateDocxPage(dataUrl, i + 1, totalPages);
+          docxPagesB64.push(docxPageB64);
         }
       }
   
-      if (canvasDataUrls.length > 0) {
-        const blob = await generateFullDocx(canvasDataUrls);
+      if (docxPagesB64.length > 0) {
+        update({
+          id: toastId,
+          title: 'Generando documento...',
+          description: 'Paso 2 de 2: Ensamblando archivo final...',
+        });
+
+        const finalBlob = await mergeDocx(docxPagesB64);
         
-        // Create a link and trigger the download
         const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
+        link.href = URL.createObjectURL(finalBlob);
         link.download = 'Mosaico-de-Fotos.docx';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(link.href);
 
-        toast({ 
+        update({ 
           id: toastId,
           title: '¡Descarga completa!', 
           description: 'Tu documento ha sido guardado.' 
@@ -164,7 +175,7 @@ export default function Home() {
   
     } catch (error) {
       console.error("Error generando el documento:", error);
-      toast({ 
+      update({ 
         id: toastId,
         variant: 'destructive', 
         title: 'Falló la descarga', 
