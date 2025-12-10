@@ -25,6 +25,15 @@ function dataUrlToBuffer(dataUrl: string): Buffer {
   return Buffer.from(base64, 'base64');
 }
 
+async function blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+}
+
 async function generateDocxPageClient(canvasDataUrl: string, pageNum: number, totalPages: number): Promise<string> {
     const imageBuffer = dataUrlToBuffer(canvasDataUrl);
     const section = createDocumentSection(imageBuffer, pageNum, totalPages);
@@ -34,7 +43,8 @@ async function generateDocxPageClient(canvasDataUrl: string, pageNum: number, to
     };
 
     const packer = new Packer();
-    const b64 = await packer.toBase64String(doc as any);
+    const blob = await packer.toBlob(doc as any);
+    const b64 = await blobToBase64(blob);
     return b64;
 }
 
