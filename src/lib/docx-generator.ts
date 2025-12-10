@@ -1,33 +1,33 @@
 
-import { ImageRun, Paragraph, Footer, AlignmentType, PageNumber, ISectionOptions, TextRun, PageOrientation } from 'docx';
+import * as docx from 'docx';
 
 // A4 dimensions in twentieths of a point (twips)
 const A4_LANDSCAPE_WIDTH_TWIPS = 15840;
 const A4_LANDSCAPE_HEIGHT_TWIPS = 12240;
 
 
-export function createDocumentSection(imageBuffer: ArrayBuffer, pageNum: number, totalPages: number): ISectionOptions {
+export function createDocumentSection(imageBuffer: ArrayBuffer, pageNum: number, totalPages: number): docx.ISectionOptions {
     const margin = 907; // ~1.59cm margin
 
     const availableWidth = A4_LANDSCAPE_WIDTH_TWIPS - (margin * 2);
     const availableHeight = A4_LANDSCAPE_HEIGHT_TWIPS - (margin * 2);
 
-    const section: ISectionOptions = {
+    const section: docx.ISectionOptions = {
         properties: {
             page: {
                 margin: { top: margin, right: margin, bottom: margin, left: margin },
                 size: { width: A4_LANDSCAPE_WIDTH_TWIPS, height: A4_LANDSCAPE_HEIGHT_TWIPS },
-                orientation: PageOrientation.LANDSCAPE,
+                orientation: docx.PageOrientation.LANDSCAPE,
             },
         },
         footers: {
-            default: new Footer({
+            default: new docx.Footer({
                 children: [
-                    new Paragraph({
-                        alignment: AlignmentType.CENTER,
+                    new docx.Paragraph({
+                        alignment: docx.AlignmentType.CENTER,
                         children: [
-                            new TextRun({
-                                children: ["Página ", PageNumber.CURRENT, " de ", PageNumber.TOTAL_PAGES],
+                            new docx.TextRun({
+                                children: ["Página ", docx.PageNumber.CURRENT, " de ", docx.PageNumber.TOTAL_PAGES],
                             }),
                         ],
                     }),
@@ -35,12 +35,14 @@ export function createDocumentSection(imageBuffer: ArrayBuffer, pageNum: number,
             }),
         },
         children: [
-            new Paragraph({
+            new docx.Paragraph({
                 children: [
-                    new ImageRun({
+                    new docx.ImageRun({
                         data: imageBuffer,
-                        width: availableWidth,
-                        height: availableHeight,
+                        transformation: {
+                            width: availableWidth,
+                            height: availableHeight,
+                        },
                     }),
                 ],
             }),
@@ -48,3 +50,4 @@ export function createDocumentSection(imageBuffer: ArrayBuffer, pageNum: number,
     };
     return section;
 }
+
