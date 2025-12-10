@@ -143,10 +143,8 @@ export default function Home() {
 
     try {
         const sections: docx.ISectionOptions[] = [];
-        
-        const PAGE_WIDTH = 16838;
-        const PAGE_HEIGHT = 11906;
-        const MARGIN_TWIPS = 720;
+        const CANVAS_WIDTH = 2042;
+        const CANVAS_HEIGHT = 1422;
         
         for (let i = 0; i < totalPages; i++) {
             update({
@@ -156,23 +154,6 @@ export default function Home() {
             });
             const dataUrl = collagePreviewRef.current.getCanvasDataUrl(i);
             if (dataUrl) {
-                const img = new window.Image();
-                img.src = dataUrl;
-                await new Promise((resolve) => (img.onload = resolve));
-            
-                const naturalWidth = img.width;
-                const naturalHeight = img.height;
-            
-                const maxWidth = PAGE_WIDTH - MARGIN_TWIPS * 2;
-                const maxHeight = PAGE_HEIGHT - MARGIN_TWIPS * 2;
-            
-                const widthRatio = maxWidth / naturalWidth;
-                const heightRatio = maxHeight / naturalHeight;
-                const scaleFactor = Math.min(widthRatio, heightRatio);
-            
-                const finalWidth = naturalWidth * scaleFactor;
-                const finalHeight = naturalHeight * scaleFactor;
-            
                 const imageBuffer = dataUrlToArrayBuffer(dataUrl);
 
                 const imageParagraph = new docx.Paragraph({
@@ -181,8 +162,8 @@ export default function Home() {
                         new docx.ImageRun({
                             data: imageBuffer,
                             transformation: {
-                                width: finalWidth,
-                                height: finalHeight,
+                                width: CANVAS_WIDTH,
+                                height: CANVAS_HEIGHT,
                             },
                         }),
                     ],
@@ -191,9 +172,9 @@ export default function Home() {
                 const section: docx.ISectionOptions = {
                     properties: {
                         page: {
-                            size: { width: PAGE_WIDTH, height: PAGE_HEIGHT },
+                            size: { width: 16838, height: 11906 },
                             orientation: docx.PageOrientation.LANDSCAPE,
-                            margin: { top: MARGIN_TWIPS, right: MARGIN_TWIPS, bottom: MARGIN_TWIPS, left: MARGIN_TWIPS },
+                            margin: { top: 720, right: 720, bottom: 720, left: 720 },
                         },
                     },
                     footers: {
