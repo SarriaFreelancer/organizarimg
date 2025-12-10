@@ -143,6 +143,7 @@ export default function Home() {
 
     try {
         const sections: docx.ISectionOptions[] = [];
+        
         const PAGE_WIDTH = 16838;
         const PAGE_HEIGHT = 11906;
         const MARGIN_TWIPS = 720;
@@ -382,7 +383,5 @@ export default function Home() {
     </div>
   );
 }
-
-    
 
     
