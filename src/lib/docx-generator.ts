@@ -1,5 +1,5 @@
 
-import { AlignmentType, Footer, Header, ImageRun, ISectionOptions, PageNumber, PageOrientation, Paragraph, TextRun } from 'docx';
+import { AlignmentType, Footer, ImageRun, ISectionOptions, PageNumber, PageOrientation, Paragraph, TextRun } from 'docx';
 
 const A4_LANDSCAPE_WIDTH_TWIPS = 16838;
 const A4_LANDSCAPE_HEIGHT_TWIPS = 11906;
