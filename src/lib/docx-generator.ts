@@ -1,5 +1,5 @@
 
-import { AlignmentType, Footer, ImageRun, ISectionOptions, PageNumber, PageOrientation, Paragraph } from 'docx';
+import { AlignmentType, Footer, ImageRun, ISectionOptions, PageNumber, PageOrientation, Paragraph, TextRun } from 'docx';
 
 const A4_LANDSCAPE_WIDTH_TWIPS = 16838;
 const A4_LANDSCAPE_HEIGHT_TWIPS = 11906;
@@ -22,39 +22,8 @@ export function createDocumentSection(imageBuffer: ArrayBuffer, pageNum: number,
                     new Paragraph({
                         alignment: AlignmentType.CENTER,
                         children: [
-                            new Paragraph({
-                                children: [
-                                    new Paragraph({
-                                        alignment: AlignmentType.CENTER,
-                                        children: [
-                                            new Paragraph({
-                                                children: [
-                                                    new Paragraph({
-                                                        alignment: AlignmentType.CENTER,
-                                                        children: [
-                                                            new Paragraph({
-                                                                children: [
-                                                                    new Paragraph({
-                                                                        alignment: AlignmentType.CENTER,
-                                                                        children: [
-                                                                            new Paragraph({
-                                                                                children: [
-                                                                                    new Paragraph({
-                                                                                        alignment: AlignmentType.CENTER,
-                                                                                    }),
-                                                                                ],
-                                                                            }),
-                                                                        ],
-                                                                    }),
-                                                                ],
-                                                            }),
-                                                        ],
-                                                    }),
-                                                ],
-                                            }),
-                                        ],
-                                    }),
-                                ],
+                            new TextRun({
+                                children: [PageNumber.CURRENT, " de ", PageNumber.TOTAL_PAGES],
                             }),
                         ],
                     }),
