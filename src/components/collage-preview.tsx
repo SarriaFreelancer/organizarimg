@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useRef, useMemo, forwardRef, useImperativeHandle, useState } from 'react';
@@ -14,9 +15,7 @@ interface CollagePreviewProps {
   onPageChange: (page: number) => void;
 }
 
-export interface CollagePreviewHandles {
-  getAllCanvasDataUrls: () => (string | undefined)[];
-}
+export interface CollagePreviewHandles {}
 
 const CANVAS_WIDTH = 2480;
 const CANVAS_HEIGHT = 1754;
@@ -130,21 +129,7 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
     }, [images, layout, totalPages]);
 
     useImperativeHandle(ref, () => ({
-      getAllCanvasDataUrls: () => {
-        if (!isClient) return [];
-        
-        return pages.map((imagesForPage, i) => {
-            const canvas = document.createElement('canvas');
-            canvas.width = CANVAS_WIDTH;
-            canvas.height = CANVAS_HEIGHT;
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-                drawPage(ctx, imagesForPage, layout, i, timestamp);
-                return canvas.toDataURL('image/png');
-            }
-            return undefined;
-        });
-      },
+      // No handles are needed anymore for download
     }));
 
     useEffect(() => {
@@ -228,3 +213,5 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
 CollagePreview.displayName = "CollagePreview";
 
 export default CollagePreview;
+
+    

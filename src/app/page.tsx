@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect, useTransition } from 'react';
@@ -15,6 +16,8 @@ import Header from '@/components/header';
 import CollagePreview, { type CollagePreviewHandles } from '@/components/collage-preview';
 import { saveAs } from 'file-saver';
 import { Document, Packer, ISectionOptions } from 'docx';
+import { A4_HEIGHT_POINTS, A4_WIDTH_POINTS } from '@/lib/docx-generator';
+import { drawImageCover } from '@/lib/utils';
 
 type LayoutOptions = 2 | 4 | 6;
 
@@ -125,30 +128,45 @@ export default function Home() {
   };
 
   const handleDownload = async () => {
-    if (!collagePreviewRef.current) return;
+    if (loadedImages.length === 0) return;
     setIsDownloading(true);
+    const totalImages = loadedImages.length;
     const { id: toastId } = toast({
       title: 'Generando documento...',
-      description: `Preparando ${totalPages} página(s).`,
+      description: `Preparando ${totalImages} página(s).`,
     });
 
     try {
-      const canvasDataUrls = collagePreviewRef.current.getAllCanvasDataUrls();
       const sections: ISectionOptions[] = [];
+      const canvas = document.createElement('canvas');
+      const canvasWidth = 2480;
+      const canvasHeight = 1754;
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
+      const ctx = canvas.getContext('2d');
 
-      for (let i = 0; i < canvasDataUrls.length; i++) {
+      if (!ctx) {
+        throw new Error("No se pudo obtener el contexto del lienzo.");
+      }
+
+      for (let i = 0; i < totalImages; i++) {
         toast({
           id: toastId,
           title: 'Generando documento...',
-          description: `Procesando página ${i + 1} de ${totalPages}...`,
+          description: `Procesando imagen ${i + 1} de ${totalImages}...`,
         });
 
-        const dataUrl = canvasDataUrls[i];
-        if (dataUrl) {
-          // Llama a la acción del servidor para cada página
-          const section = await generateDocxPage(dataUrl, i, canvasDataUrls.length);
-          sections.push(section);
-        }
+        const img = loadedImages[i];
+        
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+        
+        const padding = 80;
+        drawImageCover(ctx, img, padding, padding, canvasWidth - padding * 2, canvasHeight - padding * 2);
+
+        const dataUrl = canvas.toDataURL('image/png');
+        const section = await generateDocxPage(dataUrl, i, totalImages);
+        sections.push(section);
       }
       
       if (sections.length > 0) {
@@ -225,9 +243,9 @@ export default function Home() {
 
         <Card className="p-6">
           <h3 className="font-headline text-xl font-semibold mb-4 flex items-center">
-            Opciones de Diseño
-            {isAiLoading && <Loader2 className="ml-2 h-5 w-5 animate-spin" />}
+            Opciones de Diseño (Vista Previa)
           </h3>
+          <p className="text-sm text-muted-foreground mb-4">La descarga generará una imagen por página.</p>
           <RadioGroup value={String(layout)} onValueChange={(val) => setLayout(Number(val) as LayoutOptions)} className="space-y-3">
             {[2, 4, 6].map(option => (
               <div key={option} className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${layout === option ? 'bg-accent' : ''}`}>
@@ -247,7 +265,7 @@ export default function Home() {
         <Card className="p-6 flex flex-col gap-4">
            <Button size="lg" onClick={handleDownload} disabled={isDownloading}>
             {isDownloading ? <Loader2 className="mr-2 animate-spin" /> : <Download className="mr-2" />}
-            {isDownloading ? 'Generando...' : 'Descargar Collage'}
+            {isDownloading ? 'Generando...' : 'Descargar Documento'}
           </Button>
           <Button size="lg" variant="secondary" onClick={resetApp}>
             Empezar de Nuevo
@@ -314,3 +332,5 @@ export default function Home() {
     </div>
   );
 }
+
+    

@@ -1,3 +1,4 @@
+
 import { Document, Packer, ImageRun, Paragraph, PageBreak, PageNumber, AlignmentType, ISectionOptions } from 'docx';
 
 export const A4_WIDTH_POINTS = 595.28;
@@ -10,15 +11,19 @@ function dataUrlToBuffer(dataUrl: string): Buffer {
 
 export async function createDocumentSection(canvasDataUrl: string, index: number, total: number): Promise<ISectionOptions> {
     const imageBuffer = dataUrlToBuffer(canvasDataUrl);
+    
+    const margin = 720; // 1 inch
+    const availableWidth = A4_HEIGHT_POINTS - margin * 2;
+    const availableHeight = A4_WIDTH_POINTS - margin * 2;
 
     return {
         properties: {
             page: {
                 margin: {
-                    top: 720,
-                    right: 720,
-                    bottom: 720,
-                    left: 720,
+                    top: margin,
+                    right: margin,
+                    bottom: margin,
+                    left: margin,
                 },
                 size: {
                     orientation: 'landscape',
@@ -36,9 +41,7 @@ export async function createDocumentSection(canvasDataUrl: string, index: number
             default: new Paragraph({
                 alignment: AlignmentType.CENTER,
                 children: [
-                    new PageNumber({
-                        format: `página ${index + 1} de ${total}`,
-                    }),
+                    new Paragraph(`Página ${index + 1} de ${total}`),
                 ],
             }),
         },
@@ -48,8 +51,8 @@ export async function createDocumentSection(canvasDataUrl: string, index: number
                     new ImageRun({
                         data: imageBuffer,
                         transformation: {
-                            width: A4_HEIGHT_POINTS - 1440 / 20,
-                            height: A4_WIDTH_POINTS - 1440 / 20,
+                            width: availableWidth,
+                            height: availableHeight,
                         },
                     }),
                 ],
@@ -57,3 +60,5 @@ export async function createDocumentSection(canvasDataUrl: string, index: number
         ],
     };
 }
+
+    
