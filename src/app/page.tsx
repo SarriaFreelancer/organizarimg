@@ -145,10 +145,12 @@ export default function Home() {
         const sections: docx.ISectionOptions[] = [];
         const A4_WIDTH_TWIPS = 16838;
         const A4_HEIGHT_TWIPS = 11906;
-        const MARGIN_TWIPS = 720;
+        const MARGIN_TWIPS = 720; 
 
+        // 27cm in twips = 15309
+        // 18.8cm in twips = 10659
         const IMAGE_WIDTH_TWIPS = 15309; 
-        const IMAGE_HEIGHT_TWIPS = 10660;
+        const IMAGE_HEIGHT_TWIPS = 10659;
 
         for (let i = 0; i < totalPages; i++) {
             update({
