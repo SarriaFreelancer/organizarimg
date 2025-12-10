@@ -134,7 +134,7 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
         
         const ctx = canvas.getContext('2d');
         if (ctx) {
-            const timestamp = new Date().toLocaleString('es-ES');
+            const timestamp = new Date().toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short'});
             const imagesForPage = pages[pageIndex] || [];
             drawPage(ctx, imagesForPage, layout, pageIndex, timestamp);
         }
@@ -224,3 +224,5 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
 CollagePreview.displayName = "CollagePreview";
 
 export default CollagePreview;
+
+    

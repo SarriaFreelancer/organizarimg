@@ -145,12 +145,10 @@ export default function Home() {
         const sections: docx.ISectionOptions[] = [];
         const A4_WIDTH_TWIPS = 16838;
         const A4_HEIGHT_TWIPS = 11906;
-        const MARGIN_TWIPS = 720; 
+        const MARGIN_TWIPS = 720; // 0.5 inch
 
-        // 27cm in twips = 15309
-        // 18.8cm in twips = 10659
-        const IMAGE_WIDTH_TWIPS = 15309; 
-        const IMAGE_HEIGHT_TWIPS = 10659;
+        const IMAGE_WIDTH_TWIPS = A4_WIDTH_TWIPS - MARGIN_TWIPS * 2;
+        const IMAGE_HEIGHT_TWIPS = A4_HEIGHT_TWIPS - MARGIN_TWIPS * 2;
 
         for (let i = 0; i < totalPages; i++) {
             update({
@@ -234,6 +232,7 @@ export default function Home() {
             id: toastId,
             title: '¡Descarga completa!',
             description: 'Tu documento ha sido guardado.',
+            duration: 5000,
         });
 
     } catch (error) {
@@ -243,6 +242,7 @@ export default function Home() {
             variant: 'destructive',
             title: 'Falló la descarga',
             description: error instanceof Error ? error.message : 'No se pudo generar el documento.',
+            duration: 5000,
         });
     } finally {
         setIsDownloading(false);
@@ -385,3 +385,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
