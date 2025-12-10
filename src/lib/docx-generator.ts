@@ -2,9 +2,14 @@
 import * as docx from 'docx';
 
 export function createDocumentSection(imageBuffer: ArrayBuffer): docx.ISectionOptions {
-    const A4_LANDSCAPE_WIDTH_TWIPS = 16838;
-    const A4_LANDSCAPE_HEIGHT_TWIPS = 11906;
-    const margin = 720; // 0.5 inch in twips
+    const A4_LANDSCAPE_WIDTH_TWIPS = 16838; // 29.7cm
+    const A4_LANDSCAPE_HEIGHT_TWIPS = 11906; // 21cm
+    const margin = 720; // 0.5 inch
+
+    // 27cm in twips = 27 * 567 = 15309
+    const imageWidth = 15309;
+    // 18.8cm in twips = 18.8 * 567 = 10659.6
+    const imageHeight = 10660;
 
     return {
         properties: {
@@ -38,8 +43,8 @@ export function createDocumentSection(imageBuffer: ArrayBuffer): docx.ISectionOp
                     new docx.ImageRun({
                         data: imageBuffer,
                         transformation: {
-                            width: A4_LANDSCAPE_WIDTH_TWIPS - (margin * 2),
-                            height: A4_LANDSCAPE_HEIGHT_TWIPS - (margin * 2),
+                            width: imageWidth,
+                            height: imageHeight,
                         },
                     }),
                 ],

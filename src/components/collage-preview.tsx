@@ -19,8 +19,10 @@ export interface CollagePreviewHandles {
   getCanvasDataUrl: (pageIndex: number) => string | null;
 }
 
-const CANVAS_WIDTH = 842;
-const CANVAS_HEIGHT = 595;
+// 27cm @ 96 DPI = 1021px
+// 18.8cm @ 96 DPI = 711px
+const CANVAS_WIDTH = 1021;
+const CANVAS_HEIGHT = 711;
 
 const drawPage = (
   ctx: CanvasRenderingContext2D,
@@ -188,7 +190,7 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
     }, [currentPage, api]);
 
     const placeholder = (
-        <Card className="aspect-[1.414/1] w-full flex items-center justify-center bg-muted/50 border-dashed">
+        <Card className="aspect-[1021/711] w-full flex items-center justify-center bg-muted/50 border-dashed">
           <div className="text-center text-muted-foreground">
               <h3 className="font-headline text-2xl mb-2">Sube fotos para empezar</h3>
               <p>Tu hermoso collage aparecerá aquí.</p>
@@ -211,7 +213,7 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
                     ref={el => canvasRefs.current[index] = el}
                     width={CANVAS_WIDTH}
                     height={CANVAS_HEIGHT}
-                    className="w-full h-auto aspect-[842/595]"
+                    className="w-full h-auto aspect-[1021/711]"
                   />
                 </CardContent>
               </Card>
