@@ -2,7 +2,6 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -143,9 +142,13 @@ export default function Home() {
 
     try {
         const sections: docx.ISectionOptions[] = [];
-        const CANVAS_WIDTH = 2042;
-        const CANVAS_HEIGHT = 1422;
         
+        const PAGE_WIDTH = 16838;
+        const PAGE_HEIGHT = 11906;
+        const MARGIN_TWIPS = 720;
+        const IMAGE_WIDTH_TWIPS = PAGE_WIDTH - MARGIN_TWIPS * 2;
+        const IMAGE_HEIGHT_TWIPS = PAGE_HEIGHT - MARGIN_TWIPS * 2;
+
         for (let i = 0; i < totalPages; i++) {
             update({
                 id: toastId,
@@ -154,6 +157,23 @@ export default function Home() {
             });
             const dataUrl = collagePreviewRef.current.getCanvasDataUrl(i);
             if (dataUrl) {
+                const img = new window.Image();
+                img.src = dataUrl;
+                await new Promise((resolve) => (img.onload = resolve));
+                
+                const naturalWidth = img.width;
+                const naturalHeight = img.height;
+
+                const maxWidth = IMAGE_WIDTH_TWIPS;
+                const maxHeight = IMAGE_HEIGHT_TWIPS;
+
+                const widthRatio = maxWidth / naturalWidth;
+                const heightRatio = maxHeight / naturalHeight;
+                const scaleFactor = Math.min(widthRatio, heightRatio, 1);
+
+                const finalWidth = naturalWidth * scaleFactor;
+                const finalHeight = naturalHeight * scaleFactor;
+                
                 const imageBuffer = dataUrlToArrayBuffer(dataUrl);
 
                 const imageParagraph = new docx.Paragraph({
@@ -162,8 +182,8 @@ export default function Home() {
                         new docx.ImageRun({
                             data: imageBuffer,
                             transformation: {
-                                width: CANVAS_WIDTH,
-                                height: CANVAS_HEIGHT,
+                                width: finalWidth,
+                                height: finalHeight,
                             },
                         }),
                     ],
@@ -172,12 +192,17 @@ export default function Home() {
                 const section: docx.ISectionOptions = {
                     properties: {
                         page: {
-                            size: { width: 16838, height: 11906 },
+                            size: { width: PAGE_WIDTH, height: PAGE_HEIGHT },
                             orientation: docx.PageOrientation.LANDSCAPE,
-                            margin: { top: 720, right: 720, bottom: 720, left: 720 },
+                            margin: {
+                                top: MARGIN_TWIPS,
+                                right: MARGIN_TWIPS,
+                                bottom: MARGIN_TWIPS,
+                                left: MARGIN_TWIPS
+                            },
                         },
                     },
-                    footers: {
+                     footers: {
                         default: new docx.Footer({
                             children: [
                                 new docx.Paragraph({
@@ -275,7 +300,7 @@ export default function Home() {
           <div className="grid grid-cols-3 gap-2 mb-4 max-h-60 overflow-y-auto pr-2">
             {loadedImages.map((img, index) => (
               <div key={index} className="relative group aspect-square">
-                <Image src={img.src} alt={`vista-previa-subida-${index}`} width={100} height={100} className="rounded-md object-cover w-full h-full" />
+                <img src={img.src} alt={`vista-previa-subida-${index}`} width={100} height={100} className="rounded-md object-cover w-full h-full" />
                 <Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleRemoveImage(index)}>
                   <Trash2 className="h-3 w-3" />
                 </Button>
@@ -378,3 +403,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
