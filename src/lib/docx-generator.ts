@@ -1,5 +1,6 @@
 
-import { Document, Packer, ImageRun, Paragraph, PageBreak, PageNumber, AlignmentType, ISectionOptions } from 'docx';
+
+import { Document, ImageRun, Paragraph, PageBreak, PageNumber, AlignmentType, ISectionOptions } from 'docx';
 
 export const A4_WIDTH_POINTS = 595.28;
 export const A4_HEIGHT_POINTS = 841.89;
@@ -9,14 +10,14 @@ function dataUrlToBuffer(dataUrl: string): Buffer {
     return Buffer.from(base64, 'base64');
 }
 
-export async function createDocumentSection(canvasDataUrl: string, index: number, total: number): Promise<ISectionOptions> {
+export async function createDocumentSection(canvasDataUrl: string, index: number, total: number): Promise<Document> {
     const imageBuffer = dataUrlToBuffer(canvasDataUrl);
     
     const margin = 720; // 1 inch
     const availableWidth = A4_HEIGHT_POINTS - margin * 2;
     const availableHeight = A4_WIDTH_POINTS - margin * 2;
 
-    return {
+    const section: ISectionOptions = {
         properties: {
             page: {
                 margin: {
@@ -59,6 +60,8 @@ export async function createDocumentSection(canvasDataUrl: string, index: number
             }),
         ],
     };
+
+    return new Document({ sections: [section] });
 }
 
     

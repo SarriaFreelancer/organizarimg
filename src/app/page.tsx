@@ -15,9 +15,7 @@ import { UploadCloud, Image as ImageIcon, Sparkles, Trash2, Download, Loader2, A
 import Header from '@/components/header';
 import CollagePreview, { type CollagePreviewHandles } from '@/components/collage-preview';
 import { saveAs } from 'file-saver';
-import { Document, Packer, ISectionOptions } from 'docx';
-import { A4_HEIGHT_POINTS, A4_WIDTH_POINTS } from '@/lib/docx-generator';
-import { drawImageCover } from '@/lib/utils';
+import { generateDocxFromSections } from '@/lib/client-docx-generator';
 
 type LayoutOptions = 2 | 4 | 6;
 
@@ -134,29 +132,29 @@ export default function Home() {
       title: 'Generando documento...',
       description: `Preparando ${totalPages} página(s).`,
     });
-
+  
     try {
-      const sections: ISectionOptions[] = [];
-      
+      const sectionPromises: Promise<string>[] = [];
+  
       for (let i = 0; i < totalPages; i++) {
         toast({
           id: toastId,
           title: 'Generando documento...',
           description: `Procesando página ${i + 1} de ${totalPages}...`,
         });
-
+  
         const dataUrl = collagePreviewRef.current.getCanvasDataUrl(i);
         if (dataUrl) {
-          const section = await generateDocxPage(dataUrl, i, totalPages);
-          sections.push(section);
+          sectionPromises.push(generateDocxPage(dataUrl, i, totalPages));
         }
       }
+  
+      const sectionStrings = await Promise.all(sectionPromises);
       
-      if (sections.length > 0) {
-        const doc = new Document({ sections });
-        const blob = await Packer.toBlob(doc);
+      if (sectionStrings.length > 0) {
+        const blob = await generateDocxFromSections(sectionStrings);
         saveAs(blob, 'Mosaico-de-Fotos.docx');
-
+  
         toast({ 
           id: toastId,
           title: '¡Descarga completa!', 
@@ -165,7 +163,7 @@ export default function Home() {
       } else {
          throw new Error("No se pudo generar ninguna página del documento.");
       }
-
+  
     } catch (error) {
       console.error("Error generando el documento:", error);
       toast({ 
@@ -176,7 +174,7 @@ export default function Home() {
       });
     } finally {
       setIsDownloading(false);
-       setTimeout(() => dismiss(toastId), 5000);
+      setTimeout(() => dismiss(toastId), 5000);
     }
   };
 
@@ -315,3 +313,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
