@@ -16,19 +16,18 @@ function dataUrlToArrayBuffer(dataUrl: string): ArrayBuffer {
 }
 
 export async function generateFullDocx(canvasDataUrls: string[]): Promise<Blob> {
-    const sections: ISectionOptions[] = [];
-
     const margin = 720; // 1 inch = 720 twentieths of a point
     const availableWidth = A4_HEIGHT_POINTS - margin * 2;
     const availableHeight = A4_WIDTH_POINTS - margin * 2;
 
-    for (let i = 0; i < canvasDataUrls.length; i++) {
-        const dataUrl = canvasDataUrls[i];
-        if (!dataUrl) continue;
-
+    const sections: ISectionOptions[] = canvasDataUrls.map((dataUrl) => {
+        if (!dataUrl) {
+            // This should not happen, but as a fallback, return an empty section
+            return { children: [] };
+        }
         const imageBuffer = dataUrlToArrayBuffer(dataUrl);
 
-        const section: ISectionOptions = {
+        return {
             properties: {
                 page: {
                     margin: {
@@ -72,8 +71,7 @@ export async function generateFullDocx(canvasDataUrls: string[]): Promise<Blob> 
                 }),
             ],
         };
-        sections.push(section);
-    }
+    });
     
     const doc = new Document({ sections });
 
