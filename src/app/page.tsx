@@ -16,7 +16,7 @@ import Header from '@/components/header';
 import CollagePreview, { type CollagePreviewHandles } from '@/components/collage-preview';
 import { mergeDocx } from '@/lib/client-docx-generator';
 import { createDocumentSection } from '@/lib/docx-generator';
-import { Packer } from 'docx';
+import { Document, Packer } from 'docx';
 
 type LayoutOptions = 2 | 4 | 6;
 
@@ -38,11 +38,11 @@ async function generateDocxPageClient(canvasDataUrl: string, pageNum: number, to
     const imageBuffer = dataUrlToBuffer(canvasDataUrl);
     const section = createDocumentSection(imageBuffer, pageNum, totalPages);
     
-    const doc = {
+    const doc = new Document({
         sections: [section],
-    };
+    });
 
-    const blob = await Packer.toBlob(doc as any);
+    const blob = await Packer.toBlob(doc);
     const b64 = await blobToBase64(blob);
     return b64;
 }

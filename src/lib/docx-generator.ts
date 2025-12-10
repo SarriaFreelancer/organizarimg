@@ -1,5 +1,5 @@
 
-import { Document, ImageRun, Paragraph, Footer, AlignmentType, PageNumber, ISectionOptions, TextRun } from 'docx';
+import { ImageRun, Paragraph, Footer, AlignmentType, PageNumber, ISectionOptions, TextRun } from 'docx';
 
 const A4_HEIGHT_POINTS = 841.89;
 const A4_WIDTH_POINTS = 595.28;
