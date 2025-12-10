@@ -66,7 +66,7 @@ const drawPage = (
       const titleHeight = 28;
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(x, y, cellW, titleHeight);
-      ctx.strokeStyle = '#444';
+      ctx.strokeStyle = '#bdbdbd';
       ctx.lineWidth = 0.5;
       ctx.strokeRect(x + 0.5, y + 0.5, cellW - 1, titleHeight - 1);
       ctx.fillStyle = '#111827';
