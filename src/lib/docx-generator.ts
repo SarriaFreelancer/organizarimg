@@ -2,13 +2,15 @@
 import { ImageRun, Paragraph, Footer, AlignmentType, PageNumber, ISectionOptions, TextRun, PageOrientation } from 'docx';
 
 // A4 dimensions in twentieths of a point (twips)
-const A4_LANDSCAPE_WIDTH_TWIPS = 16838;
-const A4_LANDSCAPE_HEIGHT_TWIPS = 11906;
+// 15840 = 27.94cm (11 inches)
+// 12240 = 21.59cm (8.5 inches)
+const A4_LANDSCAPE_WIDTH_TWIPS = 15840;
+const A4_LANDSCAPE_HEIGHT_TWIPS = 12240;
+
 
 export function createDocumentSection(imageBuffer: ArrayBuffer, pageNum: number, totalPages: number): ISectionOptions {
-    const margin = 720; // 0.5 inch margin in twips
+    const margin = 907; // ~1.59cm margin
 
-    // Calculate the available width and height for the image within the margins
     const availableWidth = A4_LANDSCAPE_WIDTH_TWIPS - (margin * 2);
     const availableHeight = A4_LANDSCAPE_HEIGHT_TWIPS - (margin * 2);
 
