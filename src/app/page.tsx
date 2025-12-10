@@ -44,9 +44,15 @@ async function getLayoutRecommendation(photoCount: number): Promise<2 | 4 | 6 | 
   }
 }
 
-function dataUrlToBuffer(dataUrl: string): Buffer {
-  const base64 = dataUrl.split(',')[1];
-  return Buffer.from(base64, 'base64');
+function dataUrlToArrayBuffer(dataUrl: string): ArrayBuffer {
+    const base64 = dataUrl.split(',')[1];
+    const binaryStr = atob(base64);
+    const len = binaryStr.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
+    }
+    return bytes.buffer;
 }
 
 async function blobToBase64(blob: Blob): Promise<string> {
@@ -59,11 +65,10 @@ async function blobToBase64(blob: Blob): Promise<string> {
 }
 
 async function generateDocxPageClient(canvasDataUrl: string, pageNum: number, totalPages: number): Promise<string> {
-    const imageBuffer = dataUrlToBuffer(canvasDataUrl);
-    const section = createDocumentSection(imageBuffer, pageNum, totalPages);
+    const imageBuffer = dataUrlToArrayBuffer(canvasDataUrl);
     
     const doc = new Document({
-        sections: [section],
+        sections: [createDocumentSection(imageBuffer, pageNum, totalPages)],
     });
 
     const blob = await Packer.toBlob(doc);
