@@ -19,8 +19,8 @@ export interface CollagePreviewHandles {
   getCanvasDataUrl: (pageIndex: number) => string | null;
 }
 
-const CANVAS_WIDTH = 2480;
-const CANVAS_HEIGHT = 1754;
+const CANVAS_WIDTH = 1754;
+const CANVAS_HEIGHT = 1240;
 
 const drawPage = (
   ctx: CanvasRenderingContext2D,
@@ -211,7 +211,7 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
                     ref={el => canvasRefs.current[index] = el}
                     width={CANVAS_WIDTH}
                     height={CANVAS_HEIGHT}
-                    className="w-full h-auto aspect-[2480/1754]"
+                    className="w-full h-auto aspect-[1754/1240]"
                   />
                 </CardContent>
               </Card>
@@ -225,5 +225,3 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
 CollagePreview.displayName = "CollagePreview";
 
 export default CollagePreview;
-
-    
