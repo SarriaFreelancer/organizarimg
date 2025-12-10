@@ -1,6 +1,6 @@
 
 "use client";
-import { Document, Packer, ImageRun, Paragraph, ISectionOptions, PageBreak, AlignmentType } from 'docx';
+import { Document, Packer, ImageRun, Paragraph, ISectionOptions, AlignmentType, TextRun } from 'docx';
 
 const A4_HEIGHT_POINTS = 841.89;
 const A4_WIDTH_POINTS = 595.28;
@@ -19,6 +19,8 @@ export async function generateFullDocx(canvasDataUrls: string[]): Promise<Blob> 
 
     for (let i = 0; i < canvasDataUrls.length; i++) {
         const dataUrl = canvasDataUrls[i];
+        if (!dataUrl) continue;
+
         const imageBuffer = dataUrlToBuffer(dataUrl);
 
         const section: ISectionOptions = {
@@ -41,7 +43,7 @@ export async function generateFullDocx(canvasDataUrls: string[]): Promise<Blob> 
                 default: new Paragraph({
                     alignment: AlignmentType.CENTER,
                     children: [
-                        new Paragraph(`Página ${i + 1} de ${canvasDataUrls.length}`),
+                        new TextRun(`Página ${i + 1} de ${canvasDataUrls.length}`),
                     ],
                 }),
             },
@@ -67,5 +69,3 @@ export async function generateFullDocx(canvasDataUrls: string[]): Promise<Blob> 
     const blob = await Packer.toBlob(doc);
     return blob;
 }
-
-    
