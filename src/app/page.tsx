@@ -20,8 +20,8 @@ import { Document, Packer, ISectionOptions } from 'docx';
 type LayoutOptions = 2 | 4 | 6;
 
 function getLayoutRecommendation(photoCount: number): LayoutOptions {
-    if (photoCount <= 4) return 2;
-    if (photoCount <= 8) return 4;
+    if (photoCount <= 3) return 2;
+    if (photoCount <= 6) return 4;
     return 6;
 }
 
@@ -83,9 +83,15 @@ export default function Home() {
   useEffect(() => {
     if (debouncedImageCount > 0) {
         const recommendation = getLayoutRecommendation(debouncedImageCount);
-        if (recommendation && recommendation !== layout) {
+        if (recommendation) {
             setRecommendedLayout(recommendation);
-            setLayout(recommendation);
+            if(recommendation !== layout) {
+              setLayout(recommendation);
+              toast({
+                title: 'Diseño automático aplicado',
+                description: `Hemos seleccionado el diseño de ${recommendation} fotos por página para ti.`
+              });
+            }
         }
     } else {
       setRecommendedLayout(null);
@@ -224,7 +230,7 @@ export default function Home() {
     <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-8 p-4 md:p-8">
       <aside className="lg:sticky top-8 self-start flex flex-col gap-6">
         <Card className="p-6">
-          <h2 className="font-headline text-2xl font-semibold mb-4">Tus Fotos</h2>
+          <h2 className="font-headline text-2xl font-semibold mb-4">Tus Fotos ({images.length})</h2>
           <div className="grid grid-cols-3 gap-2 mb-4 max-h-60 overflow-y-auto pr-2">
             {loadedImages.map((img, index) => (
               <div key={index} className="relative group aspect-square">
@@ -331,5 +337,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
