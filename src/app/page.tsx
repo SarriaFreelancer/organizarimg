@@ -96,8 +96,7 @@ export default function Home() {
     } else {
       setRecommendedLayout(null);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedImageCount]);
+  }, [debouncedImageCount, layout, toast]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
