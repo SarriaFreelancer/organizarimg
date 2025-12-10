@@ -1,13 +1,18 @@
-
 "use client";
 import { Document, Packer, ImageRun, Paragraph, ISectionOptions, AlignmentType, TextRun, Footer, PageNumber } from 'docx';
 
 const A4_HEIGHT_POINTS = 841.89;
 const A4_WIDTH_POINTS = 595.28;
 
-function dataUrlToBuffer(dataUrl: string): Buffer {
+function dataUrlToArrayBuffer(dataUrl: string): ArrayBuffer {
     const base64 = dataUrl.split(',')[1];
-    return Buffer.from(base64, 'base64');
+    const binary_string = window.atob(base64);
+    const len = binary_string.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binary_string.charCodeAt(i);
+    }
+    return bytes.buffer;
 }
 
 export async function generateFullDocx(canvasDataUrls: string[]): Promise<Blob> {
@@ -21,7 +26,7 @@ export async function generateFullDocx(canvasDataUrls: string[]): Promise<Blob> 
         const dataUrl = canvasDataUrls[i];
         if (!dataUrl) continue;
 
-        const imageBuffer = dataUrlToBuffer(dataUrl);
+        const imageBuffer = dataUrlToArrayBuffer(dataUrl);
 
         const section: ISectionOptions = {
             properties: {
