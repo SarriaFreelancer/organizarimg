@@ -143,16 +143,12 @@ export default function Home() {
     try {
       const sections: docx.ISectionOptions[] = [];
   
-      // TWIPS (Word units)
-      const PAGE_WIDTH_TWIPS = 16838;   // A4 landscape total width
-      const PAGE_HEIGHT_TWIPS = 11906;  // A4 landscape total height
-      const MARGIN_TWIPS = 720;         // 0.5 in
+      const PAGE_WIDTH_TWIPS = 16838;
+      const PAGE_HEIGHT_TWIPS = 11906;
+      const MARGIN_TWIPS = 720;
   
       const usableWidthTwips = PAGE_WIDTH_TWIPS - MARGIN_TWIPS * 2;
       const usableHeightTwips = PAGE_HEIGHT_TWIPS - MARGIN_TWIPS * 2;
-  
-      // factor para convertir TWIPS -> PIXELES (96 DPI)
-      const TWIPS_TO_PX = 96 / 1440; // = 0.0666666667
   
       for (let i = 0; i < totalPages; i++) {
         update({
@@ -164,40 +160,22 @@ export default function Home() {
         const dataUrl = collagePreviewRef.current.getCanvasDataUrl(i);
         if (!dataUrl) continue;
   
-        // diagnostico: dimensiones del PNG generado por el canvas
-        const img = new window.Image();
-        img.src = dataUrl;
-        await new Promise((resolve) => (img.onload = resolve));
-        console.log(`Page ${i}: image pixels (canvas PNG) = ${img.width} x ${img.height}`);
-        console.log("usableWidthTwips:", usableWidthTwips, "usableHeightTwips:", usableHeightTwips);
-  
-        // conversión: ancho imprimible en PIXELES
-        const usableWidthPx = Math.round(usableWidthTwips * TWIPS_TO_PX);
-        const usableHeightPx = Math.round(usableHeightTwips * TWIPS_TO_PX);
-        console.log("usable printable px:", usableWidthPx, "x", usableHeightPx);
-  
-        // calcular tamaño objetivo en px manteniendo aspecto del canvas PNG
-        const aspect = img.height / img.width;
-        let targetWidthPx = usableWidthPx;
-        let targetHeightPx = Math.round(targetWidthPx * aspect);
-  
-        // si excede altura imprimible en px, escalar por altura en su lugar
-        if (targetHeightPx > usableHeightPx) {
-          targetHeightPx = usableHeightPx;
-          targetWidthPx = Math.round(targetHeightPx / aspect);
-        }
-  
-        console.log("target px for docx:", targetWidthPx, "x", targetHeightPx);
-  
-        // ArrayBuffer listo para docx (dataUrl => ArrayBuffer)
         const imageBuffer = dataUrlToArrayBuffer(dataUrl);
+  
+        const aspect = CANVAS_HEIGHT / CANVAS_WIDTH;
+        let targetWidth = usableWidthTwips;
+        let targetHeight = Math.round(targetWidth * aspect);
+  
+        if (targetHeight > usableHeightTwips) {
+          targetHeight = usableHeightTwips;
+          targetWidth = Math.round(targetHeight / aspect);
+        }
   
         const imageRun = new docx.ImageRun({
           data: imageBuffer,
           transformation: {
-            // PASAR píxeles (no twips)
-            width: targetWidthPx,
-            height: targetHeightPx,
+            width: targetWidth,
+            height: targetHeight,
           },
         });
   
@@ -255,7 +233,6 @@ export default function Home() {
       setTimeout(() => dismiss(toastId), 5000);
     }
   };
-  
 
 
   const HeroSection = () => (

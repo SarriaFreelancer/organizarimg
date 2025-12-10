@@ -4,7 +4,7 @@
 import React, { useEffect, useRef, useMemo, forwardRef, useImperativeHandle, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
-import { cn, drawImageCover, drawPlaceholder, roundRect } from '@/lib/utils';
+import { cn, drawImageCover, drawPlaceholder } from '@/lib/utils';
 
 type LayoutOptions = 2 | 4 | 6;
 
@@ -26,8 +26,7 @@ const drawPage = (
   ctx: CanvasRenderingContext2D,
   imagesForPage: HTMLImageElement[],
   layout: LayoutOptions,
-  pageNumber: number,
-  timestamp: string | null
+  pageNumber: number
 ) => {
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -83,20 +82,6 @@ const drawPage = (
       } else {
         drawPlaceholder(ctx, x, imgContainerY, cellW, imgContainerH, `Imagen ${imageIndexInAll + 1}`);
       }
-      
-      if (timestamp) {
-        ctx.font = '8px Inter, sans-serif';
-        const tsW = ctx.measureText(timestamp).width + 8;
-        const tsH = 12;
-        const tsX = x + cellW - tsW - 6;
-        const tsY = y + cellH - tsH - 6;
-        ctx.fillStyle = 'rgba(0,0,0,0.5)';
-        roundRect(ctx, tsX, tsY, tsW, tsH, 3, true, false);
-        ctx.fillStyle = 'rgba(255,255,255,0.95)';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(timestamp, tsX + 4, tsY + tsH / 2);
-      }
     }
   }
 };
@@ -129,9 +114,8 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
         
         const ctx = canvas.getContext('2d');
         if (ctx) {
-            const timestamp = new Date().toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short'});
             const imagesForPage = pages[pageIndex] || [];
-            drawPage(ctx, imagesForPage, layout, pageIndex, timestamp);
+            drawPage(ctx, imagesForPage, layout, pageIndex);
         }
 
         return canvas.toDataURL('image/png', 1.0);
@@ -146,7 +130,7 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
         if (canvas) {
           const ctx = canvas.getContext('2d');
           if (ctx) {
-            drawPage(ctx, imagesForPage, layout, i, null);
+            drawPage(ctx, imagesForPage, layout, i);
           }
         }
       });
