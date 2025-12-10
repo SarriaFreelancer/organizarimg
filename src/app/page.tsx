@@ -12,7 +12,7 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { AnimatePresence, motion } from 'framer-motion';
 import { UploadCloud, Image as ImageIcon, Sparkles, Trash2, Download, Loader2, ArrowLeft, ArrowRight, Wand2 } from 'lucide-react';
 import Header from '@/components/header';
-import CollagePreview, { type CollagePreviewHandles } from '@/components/collage-preview';
+import CollagePreview, { type CollagePreviewHandles, CANVAS_WIDTH, CANVAS_HEIGHT } from '@/components/collage-preview';
 import * as docx from 'docx';
 
 type LayoutOptions = 2 | 4 | 6;
@@ -139,116 +139,120 @@ export default function Home() {
         title: 'Generando documento...',
         description: 'Preparando páginas...',
     });
-
+  
     try {
-        const PAGE_WIDTH_TWIPS = 16838;
-        const PAGE_HEIGHT_TWIPS = 11906;
-        const MARGIN_TWIPS = 720;
-
-        const USABLE_WIDTH = PAGE_WIDTH_TWIPS - MARGIN_TWIPS * 2;
-        const USABLE_HEIGHT = PAGE_HEIGHT_TWIPS - MARGIN_TWIPS * 2;
-
-        const sections: docx.ISectionOptions[] = [];
-        
-        for (let i = 0; i < totalPages; i++) {
-            update({
-                id: toastId,
-                title: 'Generando documento...',
-                description: `Procesando página ${i + 1} de ${totalPages}...`,
-            });
-            const dataUrl = collagePreviewRef.current.getCanvasDataUrl(i);
-            if (dataUrl) {
-                // Get canvas dimensions from where it's defined
-                const CANVAS_WIDTH = 2042;
-                const CANVAS_HEIGHT = 1422;
-                const canvasAspectRatio = CANVAS_HEIGHT / CANVAS_WIDTH;
-                
-                // Calculate target size respecting aspect ratio to fit within usable page area
-                let targetWidth = USABLE_WIDTH;
-                let targetHeight = targetWidth * canvasAspectRatio;
-
-                if (targetHeight > USABLE_HEIGHT) {
-                  targetHeight = USABLE_HEIGHT;
-                  targetWidth = targetHeight / canvasAspectRatio;
-                }
-
-                const imageBuffer = dataUrlToArrayBuffer(dataUrl);
-
-                const imageParagraph = new docx.Paragraph({
-                    alignment: docx.AlignmentType.CENTER,
-                    spacing: { after: 0, before: 0 },
-                    children: [
-                        new docx.ImageRun({
-                            data: imageBuffer,
-                            transformation: {
-                                width: targetWidth,
-                                height: targetHeight,
-                            },
-                        }),
-                    ],
-                });
-
-                const section: docx.ISectionOptions = {
-                    properties: {
-                        page: {
-                            size: { width: PAGE_WIDTH_TWIPS, height: PAGE_HEIGHT_TWIPS },
-                            orientation: docx.PageOrientation.LANDSCAPE,
-                            margin: {
-                                top: MARGIN_TWIPS,
-                                right: MARGIN_TWIPS,
-                                bottom: MARGIN_TWIPS,
-                                left: MARGIN_TWIPS
-                            },
-                        },
-                    },
-                    children: [imageParagraph],
-                };
-
-                sections.push(section);
-            }
-        }
-
-        if (sections.length === 0) {
-            throw new Error("No se pudo generar ninguna página del documento.");
-        }
-        
+      const sections: docx.ISectionOptions[] = [];
+  
+      // Valores Word en TWIPS (1 in = 1440 twips)
+      const PAGE_WIDTH_TWIPS = 16838;   // A4 landscape width (11.69 in * 1440)
+      const PAGE_HEIGHT_TWIPS = 11906;  // A4 landscape height (8.27 in * 1440)
+      const MARGIN_TWIPS = 720;         // 0.5 in margins (ajusta si quieres distinto)
+  
+      // Ancho usable dentro de márgenes
+      const usableWidthTwips = PAGE_WIDTH_TWIPS - MARGIN_TWIPS * 2;
+  
+      for (let i = 0; i < totalPages; i++) {
         update({
-            id: toastId,
-            title: 'Generando documento...',
-            description: 'Ensamblando archivo final...',
+          id: toastId,
+          title: 'Generando documento...',
+          description: `Procesando página ${i + 1} de ${totalPages}...`,
         });
+  
+        const dataUrl = collagePreviewRef.current.getCanvasDataUrl(i);
+        if (!dataUrl) continue;
+  
+        // --- diagnóstico: opcional, útil para debug
+        const img = new window.Image();
+        img.src = dataUrl;
+        await new Promise((resolve) => (img.onload = resolve));
+        console.log(`Page ${i}: image pixels: ${img.width} x ${img.height}`);
+  
+        // Convierte el DataURL a ArrayBuffer listo para docx
+        const imageBuffer = dataUrlToArrayBuffer(dataUrl);
+  
+        // Calcula tamaño objetivo en TWIPS
+        // Escalamos al ANCHO imprimible (usableWidthTwips) y mantenemos la proporción
+        const aspect = img.height / img.width;
+        const targetWidthTwips = Math.round(usableWidthTwips);
+        const targetHeightTwips = Math.round(targetWidthTwips * aspect);
+  
+        let finalW, finalH;
 
-        const doc = new docx.Document({ sections });
-
-        const finalBlob = await docx.Packer.toBlob(doc);
-
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(finalBlob);
-        link.download = 'Mosaico-de-Fotos.docx';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(link.href);
-
-        update({
-            id: toastId,
-            title: '¡Descarga completa!',
-            description: 'Tu documento ha sido guardado.',
-            duration: 5000,
+        // Si quieres limitar por altura imprimible:
+        const maxHeightTwips = PAGE_HEIGHT_TWIPS - MARGIN_TWIPS * 2;
+        if (targetHeightTwips > maxHeightTwips) {
+          // si altura resultante excede el máximo, escala por altura en su lugar
+          const finalHeightTwips = maxHeightTwips;
+          const finalWidthTwips = Math.round(finalHeightTwips / aspect);
+          // reasignar
+          finalW = finalWidthTwips;
+          finalH = finalHeightTwips;
+        } else {
+          finalW = targetWidthTwips;
+          finalH = targetHeightTwips;
+        }
+  
+        // Crea el ImageRun con las dimensiones en TWIPS
+        const imageRun = new docx.ImageRun({
+          data: imageBuffer,
+          transformation: {
+            width: finalW,
+            height: finalH,
+          },
         });
-
+  
+        const paragraph = new docx.Paragraph({
+          alignment: docx.AlignmentType.CENTER,
+          spacing: { before: 0, after: 0 },
+          children: [imageRun],
+        });
+  
+        const section: docx.ISectionOptions = {
+          properties: {
+            page: {
+              size: { width: PAGE_WIDTH_TWIPS, height: PAGE_HEIGHT_TWIPS },
+              orientation: docx.PageOrientation.LANDSCAPE,
+              margin: { top: MARGIN_TWIPS, right: MARGIN_TWIPS, bottom: MARGIN_TWIPS, left: MARGIN_TWIPS },
+            },
+          },
+          children: [paragraph],
+        };
+  
+        sections.push(section);
+      }
+  
+      if (sections.length === 0) throw new Error("No se generó ninguna página.");
+  
+      const doc = new docx.Document({ sections });
+      const finalBlob = await docx.Packer.toBlob(doc);
+  
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(finalBlob);
+      link.download = 'Mosaico-de-Fotos.docx';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+  
+      update({
+        id: toastId,
+        title: '¡Descarga completa!',
+        description: 'Tu documento ha sido guardado.',
+        duration: 5000,
+      });
+  
     } catch (error) {
-        console.error("Error generando el documento:", error);
-        update({
-            id: toastId,
-            variant: 'destructive',
-            title: 'Falló la descarga',
-            description: error instanceof Error ? error.message : 'No se pudo generar el documento.',
-            duration: 5000,
-        });
+      console.error("Error generando el documento:", error);
+      update({
+        id: toastId,
+        variant: 'destructive',
+        title: 'Falló la descarga',
+        description: error instanceof Error ? error.message : 'No se pudo generar el documento.',
+        duration: 5000,
+      });
     } finally {
-        setIsDownloading(false);
-        setTimeout(() => dismiss(toastId), 5000);
+      setIsDownloading(false);
+      setTimeout(() => dismiss(toastId), 5000);
     }
   };
 

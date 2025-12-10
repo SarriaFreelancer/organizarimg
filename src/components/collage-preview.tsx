@@ -19,8 +19,8 @@ export interface CollagePreviewHandles {
   getCanvasDataUrl: (pageIndex: number) => string | null;
 }
 
-const CANVAS_WIDTH = 2042; 
-const CANVAS_HEIGHT = 1422; 
+export const CANVAS_WIDTH = 2042; 
+export const CANVAS_HEIGHT = 1422; 
 
 const drawPage = (
   ctx: CanvasRenderingContext2D,
