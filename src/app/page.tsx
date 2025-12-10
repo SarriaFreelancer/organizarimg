@@ -142,7 +142,10 @@ export default function Home() {
     });
 
     try {
-        const docChildren: (docx.Paragraph | docx.Table)[] = [];
+        const sections: docx.ISectionOptions[] = [];
+        const A4_LANDSCAPE_WIDTH_TWIPS = 16838;
+        const A4_LANDSCAPE_HEIGHT_TWIPS = 11906;
+        const margin = 720; // 0.5 inch in twips
 
         for (let i = 0; i < totalPages; i++) {
             update({
@@ -165,14 +168,38 @@ export default function Home() {
                         }),
                     ],
                 });
-                docChildren.push(imageParagraph);
-                if (i < totalPages - 1) {
-                    docChildren.push(new docx.Paragraph({ children: [new docx.PageBreak()] }));
-                }
+
+                sections.push({
+                    properties: {
+                        page: {
+                            margin: { top: margin, right: margin, bottom: margin, left: margin },
+                            size: {
+                                width: A4_LANDSCAPE_WIDTH_TWIPS,
+                                height: A4_LANDSCAPE_HEIGHT_TWIPS,
+                                orientation: docx.PageOrientation.LANDSCAPE,
+                            },
+                        },
+                    },
+                    footers: {
+                        default: new docx.Footer({
+                            children: [
+                                new docx.Paragraph({
+                                    alignment: docx.AlignmentType.RIGHT,
+                                    children: [
+                                        new docx.TextRun({
+                                            children: ["Página ", docx.PageNumber.CURRENT, " de ", docx.PageNumber.TOTAL_PAGES],
+                                        }),
+                                    ],
+                                }),
+                            ],
+                        }),
+                    },
+                    children: [imageParagraph],
+                });
             }
         }
 
-        if (docChildren.length === 0) {
+        if (sections.length === 0) {
             throw new Error("No se pudo generar ninguna página del documento.");
         }
 
@@ -181,39 +208,9 @@ export default function Home() {
             title: 'Generando documento...',
             description: 'Ensamblando archivo final...',
         });
-
-        const A4_LANDSCAPE_WIDTH_TWIPS = 16838;
-        const A4_LANDSCAPE_HEIGHT_TWIPS = 11906;
-        const margin = 720; // 0.5 inch
-
+        
         const doc = new docx.Document({
-            sections: [{
-                properties: {
-                    page: {
-                        margin: { top: margin, right: margin, bottom: margin, left: margin },
-                        size: {
-                            width: A4_LANDSCAPE_WIDTH_TWIPS,
-                            height: A4_LANDSCAPE_HEIGHT_TWIPS,
-                            orientation: docx.PageOrientation.LANDSCAPE,
-                        },
-                    },
-                },
-                footers: {
-                    default: new docx.Footer({
-                        children: [
-                            new docx.Paragraph({
-                                alignment: docx.AlignmentType.RIGHT,
-                                children: [
-                                    new docx.TextRun({
-                                        children: ["Página ", docx.PageNumber.CURRENT, " de ", docx.PageNumber.TOTAL_PAGES],
-                                    }),
-                                ],
-                            }),
-                        ],
-                    }),
-                },
-                children: docChildren,
-            }],
+            sections: sections,
         });
 
         const finalBlob = await docx.Packer.toBlob(doc);
@@ -381,5 +378,3 @@ export default function Home() {
     </div>
   );
 }
-
-  
