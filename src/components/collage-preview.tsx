@@ -19,9 +19,9 @@ export interface CollagePreviewHandles {
   getCanvasDataUrl: (pageIndex: number) => string | null;
 }
 
-// Corresponds to 27cm x 18.8cm at 96 DPI
-const CANVAS_WIDTH = 1021;
-const CANVAS_HEIGHT = 711;
+// A4 Landscape at 96 DPI. 27cm x 18.8cm content area.
+const CANVAS_WIDTH = 1021; // (27 / 2.54) * 96
+const CANVAS_HEIGHT = 711; // (18.8 / 2.54) * 96
 
 const drawPage = (
   ctx: CanvasRenderingContext2D,
@@ -226,3 +226,5 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
 CollagePreview.displayName = "CollagePreview";
 
 export default CollagePreview;
+
+  

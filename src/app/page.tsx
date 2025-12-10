@@ -14,7 +14,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { UploadCloud, Image as ImageIcon, Sparkles, Trash2, Download, Loader2, ArrowLeft, ArrowRight, Wand2 } from 'lucide-react';
 import Header from '@/components/header';
 import CollagePreview, { type CollagePreviewHandles } from '@/components/collage-preview';
-import { createDocumentSectionChildren } from '@/lib/docx-generator';
 import * as docx from 'docx';
 
 type LayoutOptions = 2 | 4 | 6;
@@ -138,103 +137,114 @@ export default function Home() {
     if (!collagePreviewRef.current || loadedImages.length === 0) return;
     setIsDownloading(true);
     const { id: toastId, update } = toast({
-      title: 'Generando documento...',
-      description: 'Preparando páginas...',
+        title: 'Generando documento...',
+        description: 'Preparando páginas...',
     });
-  
+
     try {
         const docChildren: (docx.Paragraph | docx.Table)[] = [];
 
         for (let i = 0; i < totalPages; i++) {
-          update({
-            id: toastId,
-            title: 'Generando documento...',
-            description: `Procesando página ${i + 1} de ${totalPages}...`,
-          });
-          const dataUrl = collagePreviewRef.current.getCanvasDataUrl(i);
-          if (dataUrl) {
-            const imageBuffer = dataUrlToArrayBuffer(dataUrl);
-            const pageChildren = createDocumentSectionChildren(imageBuffer);
-            docChildren.push(...pageChildren);
-            if (i < totalPages - 1) {
-              docChildren.push(new docx.Paragraph({ children: [new docx.PageBreak()] }));
+            update({
+                id: toastId,
+                title: 'Generando documento...',
+                description: `Procesando página ${i + 1} de ${totalPages}...`,
+            });
+            const dataUrl = collagePreviewRef.current.getCanvasDataUrl(i);
+            if (dataUrl) {
+                const imageBuffer = dataUrlToArrayBuffer(dataUrl);
+                const imageParagraph = new docx.Paragraph({
+                    alignment: docx.AlignmentType.CENTER,
+                    children: [
+                        new docx.ImageRun({
+                            data: imageBuffer,
+                            transformation: {
+                                width: 15309, // 27cm in twips
+                                height: 10659, // 18.8cm in twips
+                            },
+                        }),
+                    ],
+                });
+                docChildren.push(imageParagraph);
+                if (i < totalPages - 1) {
+                    docChildren.push(new docx.Paragraph({ children: [new docx.PageBreak()] }));
+                }
             }
-          }
         }
-    
-        if (docChildren.length > 0) {
-          update({
+
+        if (docChildren.length === 0) {
+            throw new Error("No se pudo generar ninguna página del documento.");
+        }
+
+        update({
             id: toastId,
             title: 'Generando documento...',
             description: 'Ensamblando archivo final...',
-          });
-          
-          const A4_LANDSCAPE_WIDTH_TWIPS = 16838;
-          const A4_LANDSCAPE_HEIGHT_TWIPS = 11906;
-          const margin = 720;
-  
-          const doc = new docx.Document({
+        });
+
+        const A4_LANDSCAPE_WIDTH_TWIPS = 16838;
+        const A4_LANDSCAPE_HEIGHT_TWIPS = 11906;
+        const margin = 720; // 0.5 inch
+
+        const doc = new docx.Document({
             sections: [{
                 properties: {
                     page: {
                         margin: { top: margin, right: margin, bottom: margin, left: margin },
-                        size: { 
-                            width: A4_LANDSCAPE_WIDTH_TWIPS, 
-                            height: A4_LANDSCAPE_HEIGHT_TWIPS, 
-                            orientation: 'landscape',
+                        size: {
+                            width: A4_LANDSCAPE_WIDTH_TWIPS,
+                            height: A4_LANDSCAPE_HEIGHT_TWIPS,
+                            orientation: docx.PageOrientation.LANDSCAPE,
                         },
                     },
                 },
                 footers: {
-                  default: new docx.Footer({
-                      children: [
-                          new docx.Paragraph({
-                              alignment: 'right',
-                              children: [
-                                  new docx.TextRun({
-                                      children: ["Página ", docx.PageNumber.CURRENT, " de ", docx.PageNumber.TOTAL_PAGES],
-                                  }),
-                              ],
-                          }),
-                      ],
-                  }),
-              },
+                    default: new docx.Footer({
+                        children: [
+                            new docx.Paragraph({
+                                alignment: docx.AlignmentType.RIGHT,
+                                children: [
+                                    new docx.TextRun({
+                                        children: ["Página ", docx.PageNumber.CURRENT, " de ", docx.PageNumber.TOTAL_PAGES],
+                                    }),
+                                ],
+                            }),
+                        ],
+                    }),
+                },
                 children: docChildren,
             }],
-          });
-  
-          const finalBlob = await docx.Packer.toBlob(doc);
-          
-          const link = document.createElement('a');
-          link.href = URL.createObjectURL(finalBlob);
-          link.download = 'Mosaico-de-Fotos.docx';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(link.href);
-  
-          update({ 
-            id: toastId,
-            title: '¡Descarga completa!', 
-            description: 'Tu documento ha sido guardado.' 
-          });
-        } else {
-           throw new Error("No se pudo generar ninguna página del documento.");
-        }
-    
-      } catch (error) {
-        console.error("Error generando el documento:", error);
-        update({ 
-          id: toastId,
-          variant: 'destructive', 
-          title: 'Falló la descarga', 
-          description: error instanceof Error ? error.message : 'No se pudo generar el documento.' 
         });
-      } finally {
+
+        const finalBlob = await docx.Packer.toBlob(doc);
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(finalBlob);
+        link.download = 'Mosaico-de-Fotos.docx';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+
+        update({
+            id: toastId,
+            title: '¡Descarga completa!',
+            description: 'Tu documento ha sido guardado.',
+        });
+
+    } catch (error) {
+        console.error("Error generando el documento:", error);
+        update({
+            id: toastId,
+            variant: 'destructive',
+            title: 'Falló la descarga',
+            description: error instanceof Error ? error.message : 'No se pudo generar el documento.',
+        });
+    } finally {
         setIsDownloading(false);
         setTimeout(() => dismiss(toastId), 5000);
-      }
-    };
+    }
+};
 
 
   const HeroSection = () => (
@@ -371,3 +381,5 @@ export default function Home() {
     </div>
   );
 }
+
+  
