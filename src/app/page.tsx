@@ -145,7 +145,7 @@ export default function Home() {
 
         const dataUrl = canvasDataUrls[i];
         if (dataUrl) {
-          // Call server action for each page
+          // Llama a la acción del servidor para cada página
           const section = await generateDocxPage(dataUrl, i, canvasDataUrls.length);
           sections.push(section);
         }
