@@ -15,9 +15,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { UploadCloud, Image as ImageIcon, Sparkles, Trash2, Download, Loader2, ArrowLeft, ArrowRight, Wand2 } from 'lucide-react';
 import Header from '@/components/header';
 import CollagePreview, { type CollagePreviewHandles } from '@/components/collage-preview';
-import { mergeDocx } from '@/lib/client-docx-generator';
 import { createDocumentSection } from '@/lib/docx-generator';
-import { Document, Packer } from 'docx';
+import { Document, Packer, ISectionOptions } from 'docx';
 
 type LayoutOptions = 2 | 4 | 6;
 
@@ -53,27 +52,6 @@ function dataUrlToArrayBuffer(dataUrl: string): ArrayBuffer {
         bytes[i] = binaryStr.charCodeAt(i);
     }
     return bytes.buffer;
-}
-
-async function blobToBase64(blob: Blob): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-    });
-}
-
-async function generateDocxPageClient(canvasDataUrl: string, pageNum: number, totalPages: number): Promise<string> {
-    const imageBuffer = dataUrlToArrayBuffer(canvasDataUrl);
-    
-    const doc = new Document({
-        sections: [createDocumentSection(imageBuffer, pageNum, totalPages)],
-    });
-
-    const blob = await Packer.toBlob(doc);
-    const b64 = await blobToBase64(blob);
-    return b64;
 }
 
 export default function Home() {
@@ -193,33 +171,37 @@ export default function Home() {
     setIsDownloading(true);
     const { id: toastId, update } = toast({
       title: 'Generando documento...',
-      description: 'Paso 1 de 2: Preparando páginas...',
+      description: 'Preparando páginas...',
     });
   
     try {
-      const docxPagesB64: string[] = [];
+      const sections: ISectionOptions[] = [];
       for (let i = 0; i < totalPages; i++) {
-        const dataUrl = collagePreviewRef.current.getCanvasDataUrl(i);
-        if (dataUrl) {
-          update({
-            id: toastId,
-            title: 'Generando documento...',
-            description: `Procesando página ${i + 1} de ${totalPages}...`,
-          });
-          // Use client-side generation
-          const docxPageB64 = await generateDocxPageClient(dataUrl, i + 1, totalPages);
-          docxPagesB64.push(docxPageB64);
-        }
-      }
-  
-      if (docxPagesB64.length > 0) {
         update({
           id: toastId,
           title: 'Generando documento...',
-          description: 'Paso 2 de 2: Ensamblando archivo final...',
+          description: `Procesando página ${i + 1} de ${totalPages}...`,
+        });
+        const dataUrl = collagePreviewRef.current.getCanvasDataUrl(i);
+        if (dataUrl) {
+          const imageBuffer = dataUrlToArrayBuffer(dataUrl);
+          const section = createDocumentSection(imageBuffer, i + 1, totalPages);
+          sections.push(section);
+        }
+      }
+  
+      if (sections.length > 0) {
+        update({
+          id: toastId,
+          title: 'Generando documento...',
+          description: 'Ensamblando archivo final...',
         });
 
-        const finalBlob = await mergeDocx(docxPagesB64);
+        const doc = new Document({
+            sections: sections,
+        });
+
+        const finalBlob = await Packer.toBlob(doc);
         
         const link = document.createElement('a');
         link.href = URL.createObjectURL(finalBlob);
@@ -388,3 +370,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
