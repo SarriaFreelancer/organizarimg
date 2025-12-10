@@ -145,7 +145,10 @@ export default function Home() {
         const sections: docx.ISectionOptions[] = [];
         const A4_LANDSCAPE_WIDTH_TWIPS = 16838;
         const A4_LANDSCAPE_HEIGHT_TWIPS = 11906;
-        const margin = 720; // 0.5 inch in twips
+        const MARGIN_TWIPS = 720; // 0.5 inch = 36 points = 720 twips
+
+        const IMAGE_WIDTH_TWIPS = A4_LANDSCAPE_WIDTH_TWIPS - MARGIN_TWIPS * 2; // ~27cm
+        const IMAGE_HEIGHT_TWIPS = A4_LANDSCAPE_HEIGHT_TWIPS - MARGIN_TWIPS * 2; // ~18.8cm
 
         for (let i = 0; i < totalPages; i++) {
             update({
@@ -156,23 +159,24 @@ export default function Home() {
             const dataUrl = collagePreviewRef.current.getCanvasDataUrl(i);
             if (dataUrl) {
                 const imageBuffer = dataUrlToArrayBuffer(dataUrl);
+                
                 const imageParagraph = new docx.Paragraph({
                     alignment: docx.AlignmentType.CENTER,
                     children: [
                         new docx.ImageRun({
                             data: imageBuffer,
                             transformation: {
-                                width: 15309, // 27cm in twips
-                                height: 10659, // 18.8cm in twips
+                                width: IMAGE_WIDTH_TWIPS,
+                                height: IMAGE_HEIGHT_TWIPS,
                             },
                         }),
                     ],
                 });
 
-                sections.push({
+                const section: docx.ISectionOptions = {
                     properties: {
                         page: {
-                            margin: { top: margin, right: margin, bottom: margin, left: margin },
+                            margin: { top: MARGIN_TWIPS, right: MARGIN_TWIPS, bottom: MARGIN_TWIPS, left: MARGIN_TWIPS },
                             size: {
                                 width: A4_LANDSCAPE_WIDTH_TWIPS,
                                 height: A4_LANDSCAPE_HEIGHT_TWIPS,
@@ -195,7 +199,8 @@ export default function Home() {
                         }),
                     },
                     children: [imageParagraph],
-                });
+                };
+                sections.push(section);
             }
         }
 
@@ -241,7 +246,7 @@ export default function Home() {
         setIsDownloading(false);
         setTimeout(() => dismiss(toastId), 5000);
     }
-};
+  };
 
 
   const HeroSection = () => (
@@ -378,3 +383,5 @@ export default function Home() {
     </div>
   );
 }
+
+    

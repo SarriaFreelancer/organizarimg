@@ -19,9 +19,8 @@ export interface CollagePreviewHandles {
   getCanvasDataUrl: (pageIndex: number) => string | null;
 }
 
-// A4 Landscape at 96 DPI. 27cm x 18.8cm content area.
-const CANVAS_WIDTH = 1021; // (27 / 2.54) * 96
-const CANVAS_HEIGHT = 711; // (18.8 / 2.54) * 96
+const CANVAS_WIDTH = 1021; 
+const CANVAS_HEIGHT = 711; 
 
 const drawPage = (
   ctx: CanvasRenderingContext2D,
@@ -140,7 +139,7 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
             drawPage(ctx, imagesForPage, layout, pageIndex, timestamp);
         }
 
-        return canvas.toDataURL('image/png');
+        return canvas.toDataURL('image/png', 1.0);
       }
     }));
 
@@ -152,7 +151,6 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
         if (canvas) {
           const ctx = canvas.getContext('2d');
           if (ctx) {
-            // Passing null for timestamp, it will be added on download
             drawPage(ctx, imagesForPage, layout, i, null);
           }
         }
@@ -226,5 +224,3 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
 CollagePreview.displayName = "CollagePreview";
 
 export default CollagePreview;
-
-  
