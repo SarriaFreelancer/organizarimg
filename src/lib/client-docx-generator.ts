@@ -1,6 +1,6 @@
 
 "use client";
-import { Document, Packer, ImageRun, Paragraph, ISectionOptions, AlignmentType, TextRun } from 'docx';
+import { Document, Packer, ImageRun, Paragraph, ISectionOptions, AlignmentType, TextRun, Footer, PageNumber } from 'docx';
 
 const A4_HEIGHT_POINTS = 841.89;
 const A4_WIDTH_POINTS = 595.28;
@@ -40,10 +40,16 @@ export async function generateFullDocx(canvasDataUrls: string[]): Promise<Blob> 
                 },
             },
             footers: {
-                default: new Paragraph({
-                    alignment: AlignmentType.CENTER,
+                default: new Footer({
                     children: [
-                        new TextRun(`Página ${i + 1} de ${canvasDataUrls.length}`),
+                        new Paragraph({
+                            alignment: AlignmentType.CENTER,
+                            children: [
+                                new TextRun({
+                                    children: ["Página ", PageNumber.CURRENT, " de ", PageNumber.TOTAL_PAGES],
+                                }),
+                            ],
+                        }),
                     ],
                 }),
             },
