@@ -1,10 +1,10 @@
 
-import { AlignmentType, Footer, ImageRun, ISectionOptions, PageNumber, PageOrientation, Paragraph, TextRun } from 'docx';
+import * as docx from 'docx';
 
 const A4_LANDSCAPE_WIDTH_TWIPS = 16838;
 const A4_LANDSCAPE_HEIGHT_TWIPS = 11906;
 
-export function createDocumentSection(imageBuffer: ArrayBuffer): ISectionOptions {
+export function createDocumentSection(imageBuffer: ArrayBuffer): docx.ISectionOptions {
     const margin = 720; // 0.5 inch margin in twips
     const availableWidth = A4_LANDSCAPE_WIDTH_TWIPS - (margin * 2);
     const availableHeight = A4_LANDSCAPE_HEIGHT_TWIPS - (margin * 2);
@@ -13,17 +13,17 @@ export function createDocumentSection(imageBuffer: ArrayBuffer): ISectionOptions
         properties: {
             page: {
                 margin: { top: margin, right: margin, bottom: margin, left: margin },
-                size: { width: A4_LANDSCAPE_WIDTH_TWIPS, height: A4_LANDSCAPE_HEIGHT_TWIPS, orientation: PageOrientation.LANDSCAPE },
+                size: { width: A4_LANDSCAPE_WIDTH_TWIPS, height: A4_LANDSCAPE_HEIGHT_TWIPS, orientation: 'landscape' as docx.PageOrientation },
             },
         },
         footers: {
-            default: new Footer({
+            default: new docx.Footer({
                 children: [
-                    new Paragraph({
-                        alignment: AlignmentType.RIGHT,
+                    new docx.Paragraph({
+                        alignment: 'right' as docx.AlignmentType,
                         children: [
-                            new TextRun({
-                                children: ["Página ", PageNumber.CURRENT, " de ", PageNumber.TOTAL_PAGES],
+                            new docx.TextRun({
+                                children: ["Página ", docx.PageNumber.CURRENT, " de ", docx.PageNumber.TOTAL_PAGES],
                             }),
                         ],
                     }),
@@ -31,10 +31,10 @@ export function createDocumentSection(imageBuffer: ArrayBuffer): ISectionOptions
             }),
         },
         children: [
-            new Paragraph({
-                alignment: AlignmentType.CENTER,
+            new docx.Paragraph({
+                alignment: 'center' as docx.AlignmentType,
                 children: [
-                    new ImageRun({
+                    new docx.ImageRun({
                         data: imageBuffer,
                         transformation: {
                             width: availableWidth,
@@ -46,5 +46,3 @@ export function createDocumentSection(imageBuffer: ArrayBuffer): ISectionOptions
         ],
     };
 }
-
-    
