@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useTransition } from 'react';
 import Image from 'next/image';
-import { getLayoutRecommendation, generateDocx } from '@/app/actions';
+import { getLayoutRecommendation, generateDocxPage } from '@/app/actions';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -14,6 +14,8 @@ import { UploadCloud, Image as ImageIcon, Sparkles, Trash2, Download, Loader2, A
 import Header from '@/components/header';
 import CollagePreview, { type CollagePreviewHandles } from '@/components/collage-preview';
 import { saveAs } from 'file-saver';
+import { Document, Packer } from 'docx';
+import { A4_HEIGHT_POINTS, A4_WIDTH_POINTS } from '@/lib/docx-generator';
 
 type LayoutOptions = 2 | 4 | 6;
 
@@ -28,7 +30,7 @@ export default function Home() {
   const [isPending, startTransition] = useTransition();
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const { toast } = useToast();
+  const { toast, dismiss } = useToast();
 
   const isCreating = images.length > 0;
   const totalPages = Math.ceil(images.length / layout) || 1;
@@ -126,23 +128,54 @@ export default function Home() {
   const handleDownload = async () => {
     if (!collagePreviewRef.current) return;
     setIsDownloading(true);
-    toast({ title: 'Generando documento...', description: 'Esto puede tardar un momento.' });
+    const { id: toastId } = toast({
+      title: 'Generando documento...',
+      description: `Preparando ${totalPages} página(s).`,
+    });
 
     try {
-      const canvases = collagePreviewRef.current.getCanvases();
-      const canvasData = canvases.map(canvas => canvas?.toDataURL('image/png'));
-      
-      const blob = await generateDocx(canvasData);
+      const canvasDataUrls = collagePreviewRef.current.getAllCanvasDataUrls();
+      const sections = [];
+
+      for (let i = 0; i < canvasDataUrls.length; i++) {
+        toast({
+          id: toastId,
+          title: 'Generando documento...',
+          description: `Procesando página ${i + 1} de ${totalPages}...`,
+        });
+
+        const dataUrl = canvasDataUrls[i];
+        if (dataUrl) {
+          const section = await generateDocxPage(dataUrl, i, canvasDataUrls.length);
+          sections.push(section);
+        }
+      }
+
+      const doc = new Document({ sections });
+      const blob = await Packer.toBlob(doc);
       
       saveAs(blob, 'Mosaico-de-Fotos.docx');
-      toast({ title: '¡Descarga completa!', description: 'Tu documento ha sido guardado.' });
+      
+      toast({ 
+        id: toastId,
+        title: '¡Descarga completa!', 
+        description: 'Tu documento ha sido guardado.' 
+      });
+
     } catch (error) {
       console.error("Error generando el documento:", error);
-      toast({ variant: 'destructive', title: 'Falló la descarga', description: 'No se pudo generar el documento.' });
+      toast({ 
+        id: toastId,
+        variant: 'destructive', 
+        title: 'Falló la descarga', 
+        description: 'No se pudo generar el documento.' 
+      });
     } finally {
       setIsDownloading(false);
+       setTimeout(() => dismiss(toastId), 3000);
     }
   };
+
 
   const HeroSection = () => (
     <div className="text-center flex flex-col items-center justify-center min-h-[calc(100vh-200px)] p-8">

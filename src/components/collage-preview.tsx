@@ -15,7 +15,7 @@ interface CollagePreviewProps {
 }
 
 export interface CollagePreviewHandles {
-  getCanvases: () => (HTMLCanvasElement | null)[];
+  getAllCanvasDataUrls: () => (string | undefined)[];
 }
 
 const CANVAS_WIDTH = 2480;
@@ -130,24 +130,20 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
     }, [images, layout, totalPages]);
 
     useImperativeHandle(ref, () => ({
-      getCanvases: () => {
-        const allCanvases: (HTMLCanvasElement | null)[] = [];
+      getAllCanvasDataUrls: () => {
         if (!isClient) return [];
-
-        for (let i = 0; i < totalPages; i++) {
-          const canvas = document.createElement('canvas');
-          canvas.width = CANVAS_WIDTH;
-          canvas.height = CANVAS_HEIGHT;
-          const ctx = canvas.getContext('2d');
-          const imagesForPage = pages[i];
-          if (ctx && imagesForPage) {
-            drawPage(ctx, imagesForPage, layout, i, timestamp);
-            allCanvases.push(canvas);
-          } else {
-            allCanvases.push(null);
-          }
-        }
-        return allCanvases;
+        
+        return pages.map((imagesForPage, i) => {
+            const canvas = document.createElement('canvas');
+            canvas.width = CANVAS_WIDTH;
+            canvas.height = CANVAS_HEIGHT;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                drawPage(ctx, imagesForPage, layout, i, timestamp);
+                return canvas.toDataURL('image/png');
+            }
+            return undefined;
+        });
       },
     }));
 
