@@ -143,12 +143,12 @@ export default function Home() {
 
     try {
         const sections: docx.ISectionOptions[] = [];
-        const A4_WIDTH_TWIPS = 16838;
-        const A4_HEIGHT_TWIPS = 11906;
-        const MARGIN_TWIPS = 720; // 0.5 inch
-
-        const IMAGE_WIDTH_TWIPS = A4_WIDTH_TWIPS - MARGIN_TWIPS * 2;
-        const IMAGE_HEIGHT_TWIPS = A4_HEIGHT_TWIPS - MARGIN_TWIPS * 2;
+        const PAGE_WIDTH = 16838;
+        const PAGE_HEIGHT = 11906;
+        const MARGIN_TWIPS = 720;
+        
+        const IMAGE_WIDTH_TWIPS = PAGE_WIDTH - MARGIN_TWIPS * 2;
+        const IMAGE_HEIGHT_TWIPS = PAGE_HEIGHT - MARGIN_TWIPS * 2;
 
         for (let i = 0; i < totalPages; i++) {
             update({
@@ -176,12 +176,9 @@ export default function Home() {
                 const section: docx.ISectionOptions = {
                     properties: {
                         page: {
+                            size: { width: PAGE_WIDTH, height: PAGE_HEIGHT },
+                            orientation: docx.PageOrientation.LANDSCAPE,
                             margin: { top: MARGIN_TWIPS, right: MARGIN_TWIPS, bottom: MARGIN_TWIPS, left: MARGIN_TWIPS },
-                            size: {
-                                width: A4_WIDTH_TWIPS,
-                                height: A4_HEIGHT_TWIPS,
-                                orientation: docx.PageOrientation.LANDSCAPE,
-                            },
                         },
                     },
                     footers: {
@@ -385,5 +382,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
