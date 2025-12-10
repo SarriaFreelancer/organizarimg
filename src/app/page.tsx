@@ -44,8 +44,6 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const collagePreviewRef = useRef<CollagePreviewHandles>(null);
-  const [isPending, startTransition] = useTransition();
-  const [isAiLoading, setIsAiLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const { toast, dismiss } = useToast();
 
@@ -208,7 +206,7 @@ export default function Home() {
       >
         <h1 className="font-headline text-5xl md:text-7xl font-bold tracking-tight mb-4">Generador de Mosaicos de Fotos</h1>
         <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-          Convierte tus recuerdos en hermosos collages. Sube tus fotos y deja que nuestra IA te sugiera el diseño perfecto para un resultado espectacular.
+          Convierte tus recuerdos en hermosos collages. Sube tus fotos y el diseño se adaptará automáticamente para un resultado espectacular.
         </p>
         <div className="flex gap-4 justify-center">
           <Button size="lg" onClick={() => fileInputRef.current?.click()}>
@@ -244,8 +242,7 @@ export default function Home() {
 
         <Card className="p-6">
           <h3 className="font-headline text-xl font-semibold mb-4 flex items-center">
-            Opciones de Diseño (Vista Previa)
-             {isAiLoading && <Loader2 className="ml-2 animate-spin" />}
+            Opciones de Diseño
           </h3>
           <p className="text-sm text-muted-foreground mb-4">La descarga generará un documento Word con el diseño que veas en la vista previa.</p>
           <RadioGroup value={String(layout)} onValueChange={(val) => setLayout(Number(val) as LayoutOptions)} className="space-y-3">
@@ -256,7 +253,7 @@ export default function Home() {
                 {recommendedLayout === option && (
                   <div className="flex items-center gap-1.5 text-primary text-xs font-medium">
                     <Sparkles className="h-4 w-4" />
-                    <span>Elección IA</span>
+                    <span>Recomendado</span>
                   </div>
                 )}
               </div>

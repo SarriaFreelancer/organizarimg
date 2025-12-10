@@ -113,11 +113,8 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
     const [api, setApi] = useState<CarouselApi>();
     const [isClient, setIsClient] = useState(false);
 
-    const [timestamp, setTimestamp] = useState('');
-
     useEffect(() => {
         setIsClient(true);
-        setTimestamp(new Date().toLocaleString('es-ES'));
     }, []);
 
     const pages = useMemo(() => {
@@ -134,23 +131,32 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
       getCanvasDataUrl: (pageIndex: number) => {
         const canvas = canvasRefs.current[pageIndex];
         if (!canvas) return null;
+        
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            const timestamp = new Date().toLocaleString('es-ES');
+            const imagesForPage = pages[pageIndex] || [];
+            drawPage(ctx, imagesForPage, layout, pageIndex, timestamp);
+        }
+
         return canvas.toDataURL('image/png');
       }
     }));
 
     useEffect(() => {
-      if (!isClient || !timestamp) return;
+      if (!isClient) return;
 
       pages.forEach((imagesForPage, i) => {
         const canvas = canvasRefs.current[i];
         if (canvas) {
           const ctx = canvas.getContext('2d');
           if (ctx) {
+            const timestamp = new Date().toLocaleString('es-ES');
             drawPage(ctx, imagesForPage, layout, i, timestamp);
           }
         }
       });
-    }, [pages, layout, images, timestamp, isClient, currentPage]);
+    }, [pages, layout, images, isClient, currentPage]);
 
     useEffect(() => {
       if (!api) return;
@@ -219,3 +225,5 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
 CollagePreview.displayName = "CollagePreview";
 
 export default CollagePreview;
+
+    
