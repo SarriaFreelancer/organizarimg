@@ -1,17 +1,22 @@
 
 import { ImageRun, Paragraph, Footer, AlignmentType, PageNumber, ISectionOptions, TextRun, PageOrientation } from 'docx';
 
-const A4_LANDSCAPE_WIDTH_POINTS = 11906;
-const A4_LANDSCAPE_HEIGHT_POINTS = 8419;
+// A4 dimensions in twentieths of a point (twips)
+const A4_LANDSCAPE_WIDTH_TWIPS = 16838;
+const A4_LANDSCAPE_HEIGHT_TWIPS = 11906;
 
 export function createDocumentSection(imageBuffer: ArrayBuffer, pageNum: number, totalPages: number): ISectionOptions {
-    const margin = 720;
+    const margin = 720; // 0.5 inch margin in twips
+
+    // Calculate the available width and height for the image within the margins
+    const availableWidth = A4_LANDSCAPE_WIDTH_TWIPS - (margin * 2);
+    const availableHeight = A4_LANDSCAPE_HEIGHT_TWIPS - (margin * 2);
 
     const section: ISectionOptions = {
         properties: {
             page: {
                 margin: { top: margin, right: margin, bottom: margin, left: margin },
-                size: { width: A4_LANDSCAPE_WIDTH_POINTS, height: A4_LANDSCAPE_HEIGHT_POINTS },
+                size: { width: A4_LANDSCAPE_WIDTH_TWIPS, height: A4_LANDSCAPE_HEIGHT_TWIPS },
                 orientation: PageOrientation.LANDSCAPE,
             },
         },
@@ -35,8 +40,8 @@ export function createDocumentSection(imageBuffer: ArrayBuffer, pageNum: number,
                     new ImageRun({
                         data: imageBuffer,
                         transformation: {
-                            width: A4_LANDSCAPE_WIDTH_POINTS - (margin * 2),
-                            height: A4_LANDSCAPE_HEIGHT_POINTS - (margin * 2),
+                            width: availableWidth,
+                            height: availableHeight,
                         },
                     }),
                 ],
@@ -45,5 +50,3 @@ export function createDocumentSection(imageBuffer: ArrayBuffer, pageNum: number,
     };
     return section;
 }
-
-    
