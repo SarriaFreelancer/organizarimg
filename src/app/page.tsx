@@ -15,7 +15,7 @@ import { UploadCloud, Image as ImageIcon, Sparkles, Trash2, Download, Loader2, A
 import Header from '@/components/header';
 import CollagePreview, { type CollagePreviewHandles } from '@/components/collage-preview';
 import { createDocumentSection } from '@/lib/docx-generator';
-import { Document, Packer, ISectionOptions } from 'docx';
+import * as docx from 'docx';
 
 type LayoutOptions = 2 | 4 | 6;
 
@@ -142,7 +142,7 @@ export default function Home() {
     });
   
     try {
-        const sections: ISectionOptions[] = [];
+        const sections: docx.ISectionOptions[] = [];
         for (let i = 0; i < totalPages; i++) {
           update({
             id: toastId,
@@ -164,11 +164,11 @@ export default function Home() {
             description: 'Ensamblando archivo final...',
           });
   
-          const doc = new Document({
+          const doc = new docx.Document({
             sections: sections,
           });
   
-          const finalBlob = await Packer.toBlob(doc);
+          const finalBlob = await docx.Packer.toBlob(doc);
           
           const link = document.createElement('a');
           link.href = URL.createObjectURL(finalBlob);
@@ -336,3 +336,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
