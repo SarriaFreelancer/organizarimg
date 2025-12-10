@@ -3,7 +3,7 @@
 
 import React, { useState, useRef, useEffect, useTransition } from 'react';
 import Image from 'next/image';
-import { getLayoutRecommendation, generateDocxPage } from '@/app/actions';
+import { getLayoutRecommendation } from '@/app/actions';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -15,8 +15,28 @@ import { UploadCloud, Image as ImageIcon, Sparkles, Trash2, Download, Loader2, A
 import Header from '@/components/header';
 import CollagePreview, { type CollagePreviewHandles } from '@/components/collage-preview';
 import { mergeDocx } from '@/lib/client-docx-generator';
+import { createDocumentSection } from '@/lib/docx-generator';
+import { Packer } from 'docx';
 
 type LayoutOptions = 2 | 4 | 6;
+
+function dataUrlToBuffer(dataUrl: string): Buffer {
+  const base64 = dataUrl.split(',')[1];
+  return Buffer.from(base64, 'base64');
+}
+
+async function generateDocxPageClient(canvasDataUrl: string, pageNum: number, totalPages: number): Promise<string> {
+    const imageBuffer = dataUrlToBuffer(canvasDataUrl);
+    const section = createDocumentSection(imageBuffer, pageNum, totalPages);
+    
+    const doc = {
+        sections: [section],
+    };
+
+    const packer = new Packer();
+    const b64 = await packer.toBase64String(doc as any);
+    return b64;
+}
 
 export default function Home() {
   const [images, setImages] = useState<File[]>([]);
@@ -142,7 +162,8 @@ export default function Home() {
             title: 'Generando documento...',
             description: `Procesando página ${i + 1} de ${totalPages}...`,
           });
-          const docxPageB64 = await generateDocxPage(dataUrl, i + 1, totalPages);
+          // Use client-side generation
+          const docxPageB64 = await generateDocxPageClient(dataUrl, i + 1, totalPages);
           docxPagesB64.push(docxPageB64);
         }
       }
