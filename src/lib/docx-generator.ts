@@ -6,10 +6,8 @@ export function createDocumentSection(imageBuffer: ArrayBuffer): docx.ISectionOp
     const A4_LANDSCAPE_HEIGHT_TWIPS = 11906; // 21cm
     const margin = 720; // 0.5 inch
 
-    // 27cm in twips = 27 * 567 = 15309
-    const imageWidth = 15309;
-    // 18.8cm in twips = 18.8 * 567 = 10659.6
-    const imageHeight = 10660;
+    const imageWidth = A4_LANDSCAPE_WIDTH_TWIPS - (margin * 2);
+    const imageHeight = A4_LANDSCAPE_HEIGHT_TWIPS - (margin * 2);
 
     return {
         properties: {

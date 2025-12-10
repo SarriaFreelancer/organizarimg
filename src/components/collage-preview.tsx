@@ -19,8 +19,7 @@ export interface CollagePreviewHandles {
   getCanvasDataUrl: (pageIndex: number) => string | null;
 }
 
-// 27cm @ 96 DPI = 1021px
-// 18.8cm @ 96 DPI = 711px
+// Corresponds to 27cm x 18.8cm at 96 DPI
 const CANVAS_WIDTH = 1021;
 const CANVAS_HEIGHT = 711;
 
