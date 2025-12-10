@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { useDebounce } from '@/hooks/use-debounce';
 import { AnimatePresence, motion } from 'framer-motion';
 import { UploadCloud, Image as ImageIcon, Sparkles, Trash2, Download, Loader2, ArrowLeft, ArrowRight, Wand2 } from 'lucide-react';
 import Header from '@/components/header';
@@ -83,6 +84,7 @@ export default function Home() {
   const [isDownloading, setIsDownloading] = useState(false);
   const { toast, dismiss } = useToast();
 
+  const debouncedImageCount = useDebounce(images.length, 500);
   const isCreating = images.length > 0;
   const totalPages = Math.ceil(images.length / layout) || 1;
 
@@ -116,22 +118,27 @@ export default function Home() {
   }, [images]);
 
   useEffect(() => {
-    if (images.length > 0) {
+    if (debouncedImageCount > 0) {
       setIsAiLoading(true);
       startTransition(async () => {
         try {
-          const recommendation = await getLayoutRecommendation(images.length);
+          const recommendation = await getLayoutRecommendation(debouncedImageCount);
           if (recommendation && [2, 4, 6].includes(recommendation)) {
             const recommended = recommendation as LayoutOptions;
             setRecommendedLayout(recommended);
             setLayout(recommended);
             toast({
               title: "Sugerencia de la IA",
-              description: `Sugerimos un diseño de ${recommended} fotos para tus ${images.length} imágenes.`,
+              description: `Sugerimos un diseño de ${recommended} fotos para tus ${debouncedImageCount} imágenes.`,
             });
           }
         } catch (error) {
           console.error("Falló la recomendación de la IA:", error);
+          toast({
+            variant: "destructive",
+            title: "Error de la IA",
+            description: "No se pudo obtener la sugerencia. Es posible que se haya excedido la cuota de la API.",
+          });
         } finally {
           setIsAiLoading(false);
         }
@@ -139,7 +146,7 @@ export default function Home() {
     } else {
       setRecommendedLayout(null);
     }
-  }, [images.length, toast]);
+  }, [debouncedImageCount, toast]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
@@ -287,6 +294,7 @@ export default function Home() {
         <Card className="p-6">
           <h3 className="font-headline text-xl font-semibold mb-4 flex items-center">
             Opciones de Diseño (Vista Previa)
+             {isAiLoading && <Loader2 className="ml-2 animate-spin" />}
           </h3>
           <p className="text-sm text-muted-foreground mb-4">La descarga generará un documento Word con el diseño que veas en la vista previa.</p>
           <RadioGroup value={String(layout)} onValueChange={(val) => setLayout(Number(val) as LayoutOptions)} className="space-y-3">
