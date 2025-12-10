@@ -3,7 +3,7 @@
 
 import React, { useState, useRef, useEffect, useTransition } from 'react';
 import Image from 'next/image';
-import { getLayoutRecommendation } from '@/app/actions';
+import { recommendImageLayout } from "@/ai/flows/ai-powered-layout-recommendation";
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -19,6 +19,29 @@ import { createDocumentSection } from '@/lib/docx-generator';
 import { Document, Packer } from 'docx';
 
 type LayoutOptions = 2 | 4 | 6;
+
+async function getLayoutRecommendation(photoCount: number): Promise<2 | 4 | 6 | null> {
+  if (photoCount === 0) {
+    return null;
+  }
+  try {
+    const result = await recommendImageLayout({ numberOfPhotos: photoCount });
+    const imagesPerPage = result.imagesPerPage;
+    if ([2, 4, 6].includes(imagesPerPage)) {
+        return imagesPerPage as 2 | 4 | 6;
+    }
+    // Fallback if AI returns an invalid number
+    if (photoCount <= 4) return 2;
+    if (photoCount <= 8) return 4;
+    return 6;
+  } catch (error) {
+    console.error("Error al obtener la recomendación de diseño:", error);
+    // Fallback logic in case of AI failure
+    if (photoCount <= 4) return 2;
+    if (photoCount <= 8) return 4;
+    return 6;
+  }
+}
 
 function dataUrlToBuffer(dataUrl: string): Buffer {
   const base64 = dataUrl.split(',')[1];
