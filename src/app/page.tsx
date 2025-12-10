@@ -128,45 +128,28 @@ export default function Home() {
   };
 
   const handleDownload = async () => {
-    if (loadedImages.length === 0) return;
+    if (!collagePreviewRef.current || loadedImages.length === 0) return;
     setIsDownloading(true);
-    const totalImages = loadedImages.length;
     const { id: toastId } = toast({
       title: 'Generando documento...',
-      description: `Preparando ${totalImages} página(s).`,
+      description: `Preparando ${totalPages} página(s).`,
     });
 
     try {
       const sections: ISectionOptions[] = [];
-      const canvas = document.createElement('canvas');
-      const canvasWidth = 2480;
-      const canvasHeight = 1754;
-      canvas.width = canvasWidth;
-      canvas.height = canvasHeight;
-      const ctx = canvas.getContext('2d');
-
-      if (!ctx) {
-        throw new Error("No se pudo obtener el contexto del lienzo.");
-      }
-
-      for (let i = 0; i < totalImages; i++) {
+      
+      for (let i = 0; i < totalPages; i++) {
         toast({
           id: toastId,
           title: 'Generando documento...',
-          description: `Procesando imagen ${i + 1} de ${totalImages}...`,
+          description: `Procesando página ${i + 1} de ${totalPages}...`,
         });
 
-        const img = loadedImages[i];
-        
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-        
-        const padding = 80;
-        drawImageCover(ctx, img, padding, padding, canvasWidth - padding * 2, canvasHeight - padding * 2);
-
-        const dataUrl = canvas.toDataURL('image/png');
-        const section = await generateDocxPage(dataUrl, i, totalImages);
-        sections.push(section);
+        const dataUrl = collagePreviewRef.current.getCanvasDataUrl(i);
+        if (dataUrl) {
+          const section = await generateDocxPage(dataUrl, i, totalPages);
+          sections.push(section);
+        }
       }
       
       if (sections.length > 0) {
@@ -245,7 +228,7 @@ export default function Home() {
           <h3 className="font-headline text-xl font-semibold mb-4 flex items-center">
             Opciones de Diseño (Vista Previa)
           </h3>
-          <p className="text-sm text-muted-foreground mb-4">La descarga generará una imagen por página.</p>
+          <p className="text-sm text-muted-foreground mb-4">La descarga generará un documento Word con el diseño que veas en la vista previa.</p>
           <RadioGroup value={String(layout)} onValueChange={(val) => setLayout(Number(val) as LayoutOptions)} className="space-y-3">
             {[2, 4, 6].map(option => (
               <div key={option} className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${layout === option ? 'bg-accent' : ''}`}>
@@ -332,5 +315,3 @@ export default function Home() {
     </div>
   );
 }
-
-    

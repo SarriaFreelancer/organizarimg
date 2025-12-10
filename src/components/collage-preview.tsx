@@ -15,7 +15,9 @@ interface CollagePreviewProps {
   onPageChange: (page: number) => void;
 }
 
-export interface CollagePreviewHandles {}
+export interface CollagePreviewHandles {
+  getCanvasDataUrl: (pageIndex: number) => string | null;
+}
 
 const CANVAS_WIDTH = 2480;
 const CANVAS_HEIGHT = 1754;
@@ -129,7 +131,11 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
     }, [images, layout, totalPages]);
 
     useImperativeHandle(ref, () => ({
-      // No handles are needed anymore for download
+      getCanvasDataUrl: (pageIndex: number) => {
+        const canvas = canvasRefs.current[pageIndex];
+        if (!canvas) return null;
+        return canvas.toDataURL('image/png');
+      }
     }));
 
     useEffect(() => {
@@ -213,5 +219,3 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
 CollagePreview.displayName = "CollagePreview";
 
 export default CollagePreview;
-
-    
