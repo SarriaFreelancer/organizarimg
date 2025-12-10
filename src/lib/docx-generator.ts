@@ -1,15 +1,15 @@
 
-import { AlignmentType, Footer, ImageRun, ISectionOptions, PageNumber, PageOrientation, Paragraph, TextRun } from 'docx';
+import { AlignmentType, Footer, Header, ImageRun, ISectionOptions, PageNumber, PageOrientation, Paragraph, TextRun } from 'docx';
 
 const A4_LANDSCAPE_WIDTH_TWIPS = 16838;
 const A4_LANDSCAPE_HEIGHT_TWIPS = 11906;
 
-export function createDocumentSection(imageBuffer: ArrayBuffer, pageNum: number, totalPages: number): ISectionOptions {
+export function createDocumentSection(imageBuffer: ArrayBuffer): ISectionOptions {
     const margin = 720; // 0.5 inch margin in twips
     const availableWidth = A4_LANDSCAPE_WIDTH_TWIPS - (margin * 2);
     const availableHeight = A4_LANDSCAPE_HEIGHT_TWIPS - (margin * 2);
 
-    const section: ISectionOptions = {
+    return {
         properties: {
             page: {
                 margin: { top: margin, right: margin, bottom: margin, left: margin },
@@ -20,10 +20,10 @@ export function createDocumentSection(imageBuffer: ArrayBuffer, pageNum: number,
             default: new Footer({
                 children: [
                     new Paragraph({
-                        alignment: AlignmentType.CENTER,
+                        alignment: AlignmentType.RIGHT,
                         children: [
                             new TextRun({
-                                children: [PageNumber.CURRENT, " de ", PageNumber.TOTAL_PAGES],
+                                children: ["Página ", PageNumber.CURRENT, " de ", PageNumber.TOTAL_PAGES],
                             }),
                         ],
                     }),
@@ -45,5 +45,4 @@ export function createDocumentSection(imageBuffer: ArrayBuffer, pageNum: number,
             }),
         ],
     };
-    return section;
 }

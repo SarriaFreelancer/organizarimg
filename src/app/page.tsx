@@ -147,7 +147,7 @@ export default function Home() {
         const dataUrl = collagePreviewRef.current.getCanvasDataUrl(i);
         if (dataUrl) {
           const imageBuffer = dataUrlToArrayBuffer(dataUrl);
-          const section = createDocumentSection(imageBuffer, i + 1, totalPages);
+          const section = createDocumentSection(imageBuffer);
           sections.push(section);
         }
       }
@@ -331,5 +331,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
