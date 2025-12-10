@@ -42,8 +42,7 @@ async function generateDocxPageClient(canvasDataUrl: string, pageNum: number, to
         sections: [section],
     };
 
-    const packer = new Packer();
-    const blob = await packer.toBlob(doc as any);
+    const blob = await Packer.toBlob(doc as any);
     const b64 = await blobToBase64(blob);
     return b64;
 }
