@@ -1,15 +1,8 @@
 
 import * as docx from 'docx';
 
-// A4 dimensions in twentieths of a point (twips)
 const A4_LANDSCAPE_WIDTH_TWIPS = 15840;
 const A4_LANDSCAPE_HEIGHT_TWIPS = 12240;
-
-// User specified dimensions in twips (1cm = 567 twips)
-// Width: 24.9cm * 567 = 14118.3 -> 14118
-const IMAGE_WIDTH_TWIPS = 14118;
-// Height: 18.5cm * 567 = 10489.5 -> 10490
-const IMAGE_HEIGHT_TWIPS = 10490;
 
 export function createDocumentSection(imageBuffer: ArrayBuffer, pageNum: number, totalPages: number): docx.ISectionOptions {
     const margin = 907; // ~1.59cm margin
