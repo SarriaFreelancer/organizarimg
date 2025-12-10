@@ -2,6 +2,9 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
+  serverActions: {
+    bodySizeLimit: '50mb',
+  },
   images: {
     remotePatterns: [
       {
@@ -17,7 +20,7 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
       {
-        protocol: 'httpshttps',
+        protocol: 'https',
         hostname: 'picsum.photos',
         port: '',
         pathname: '/**',
