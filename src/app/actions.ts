@@ -13,9 +13,13 @@ export async function getLayoutRecommendation(photoCount: number): Promise<2 | 4
     if ([2, 4, 6].includes(imagesPerPage)) {
         return imagesPerPage as 2 | 4 | 6;
     }
-    return null;
+    // Fallback if AI returns an invalid number
+    if (photoCount <= 4) return 2;
+    if (photoCount <= 8) return 4;
+    return 6;
   } catch (error) {
     console.error("Error al obtener la recomendación de diseño:", error);
+    // Fallback logic in case of AI failure
     if (photoCount <= 4) return 2;
     if (photoCount <= 8) return 4;
     return 6;
