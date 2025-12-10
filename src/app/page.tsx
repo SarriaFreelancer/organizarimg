@@ -141,14 +141,7 @@ export default function Home() {
     });
 
     try {
-        const sections: docx.ISectionOptions[] = [];
-        
-        const PAGE_WIDTH = 16838;
-        const PAGE_HEIGHT = 11906;
-        const MARGIN_TWIPS = 720;
-        const IMAGE_WIDTH_TWIPS = PAGE_WIDTH - MARGIN_TWIPS * 2;
-        const IMAGE_HEIGHT_TWIPS = PAGE_HEIGHT - MARGIN_TWIPS * 2;
-
+        const allPageDataUrls: string[] = [];
         for (let i = 0; i < totalPages; i++) {
             update({
                 id: toastId,
@@ -157,83 +150,68 @@ export default function Home() {
             });
             const dataUrl = collagePreviewRef.current.getCanvasDataUrl(i);
             if (dataUrl) {
-                const img = new window.Image();
-                img.src = dataUrl;
-                await new Promise((resolve) => (img.onload = resolve));
-                
-                const naturalWidth = img.width;
-                const naturalHeight = img.height;
-
-                const maxWidth = IMAGE_WIDTH_TWIPS;
-                const maxHeight = IMAGE_HEIGHT_TWIPS;
-
-                const widthRatio = maxWidth / naturalWidth;
-                const heightRatio = maxHeight / naturalHeight;
-                const scaleFactor = Math.min(widthRatio, heightRatio, 1);
-
-                const finalWidth = naturalWidth * scaleFactor;
-                const finalHeight = naturalHeight * scaleFactor;
-                
-                const imageBuffer = dataUrlToArrayBuffer(dataUrl);
-
-                const imageParagraph = new docx.Paragraph({
-                    alignment: docx.AlignmentType.CENTER,
-                    children: [
-                        new docx.ImageRun({
-                            data: imageBuffer,
-                            transformation: {
-                                width: finalWidth,
-                                height: finalHeight,
-                            },
-                        }),
-                    ],
-                });
-
-                const section: docx.ISectionOptions = {
-                    properties: {
-                        page: {
-                            size: { width: PAGE_WIDTH, height: PAGE_HEIGHT },
-                            orientation: docx.PageOrientation.LANDSCAPE,
-                            margin: {
-                                top: MARGIN_TWIPS,
-                                right: MARGIN_TWIPS,
-                                bottom: MARGIN_TWIPS,
-                                left: MARGIN_TWIPS
-                            },
-                        },
-                    },
-                     footers: {
-                        default: new docx.Footer({
-                            children: [
-                                new docx.Paragraph({
-                                    alignment: docx.AlignmentType.RIGHT,
-                                    children: [
-                                        new docx.TextRun({
-                                            children: ["Página ", docx.PageNumber.CURRENT, " de ", docx.PageNumber.TOTAL_PAGES],
-                                        }),
-                                    ],
-                                }),
-                            ],
-                        }),
-                    },
-                    children: [imageParagraph],
-                };
-                sections.push(section);
+                allPageDataUrls.push(dataUrl);
             }
         }
 
-        if (sections.length === 0) {
+        if (allPageDataUrls.length === 0) {
             throw new Error("No se pudo generar ninguna página del documento.");
         }
-
+        
         update({
             id: toastId,
             title: 'Generando documento...',
             description: 'Ensamblando archivo final...',
         });
-        
+
         const doc = new docx.Document({
-            sections: sections,
+            sections: allPageDataUrls.map((imgBase64) => {
+                const imageBuffer = dataUrlToArrayBuffer(imgBase64);
+        
+                const PAGE_WIDTH_TWIPS = 16838;
+                const PAGE_HEIGHT_TWIPS = 11906;
+                const MARGIN_TWIPS = 720;
+                
+                const USABLE_WIDTH = PAGE_WIDTH_TWIPS - MARGIN_TWIPS * 2;
+                const USABLE_HEIGHT = PAGE_HEIGHT_TWIPS - MARGIN_TWIPS * 2;
+        
+                const CANVAS_WIDTH = 2042;
+                const CANVAS_HEIGHT = 1422;
+                const aspect = CANVAS_HEIGHT / CANVAS_WIDTH;
+        
+                let targetWidth = USABLE_WIDTH;
+                let targetHeight = targetWidth * aspect;
+
+                if (targetHeight > USABLE_HEIGHT) {
+                  targetHeight = USABLE_HEIGHT;
+                  targetWidth = targetHeight / aspect;
+                }
+        
+                const imageRun = new docx.ImageRun({
+                  data: imageBuffer,
+                  transformation: {
+                    width: targetWidth,
+                    height: targetHeight,
+                  },
+                });
+        
+                return {
+                  properties: {
+                      page: {
+                          size: { width: PAGE_WIDTH_TWIPS, height: PAGE_HEIGHT_TWIPS },
+                          orientation: docx.PageOrientation.LANDSCAPE,
+                          margin: { top: MARGIN_TWIPS, right: MARGIN_TWIPS, bottom: MARGIN_TWIPS, left: MARGIN_TWIPS },
+                      },
+                  },
+                  children: [
+                    new docx.Paragraph({
+                      alignment: docx.AlignmentType.CENTER,
+                      spacing: { after: 0, before: 0 },
+                      children: [imageRun],
+                    }),
+                  ],
+                };
+              }),
         });
 
         const finalBlob = await docx.Packer.toBlob(doc);
