@@ -1,3 +1,4 @@
+
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
@@ -29,9 +30,8 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: false,
   },
-  serverActions: {
-    bodySizeLimit: '50mb',
-  },
 };
 
 export default nextConfig;
+
+    

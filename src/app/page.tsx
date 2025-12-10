@@ -3,7 +3,7 @@
 
 import React, { useState, useRef, useEffect, useTransition } from 'react';
 import Image from 'next/image';
-import { getLayoutRecommendation, generateDocxPage } from '@/app/actions';
+import { getLayoutRecommendation } from '@/app/actions';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -15,7 +15,7 @@ import { UploadCloud, Image as ImageIcon, Sparkles, Trash2, Download, Loader2, A
 import Header from '@/components/header';
 import CollagePreview, { type CollagePreviewHandles } from '@/components/collage-preview';
 import { saveAs } from 'file-saver';
-import { generateDocxFromSections } from '@/lib/client-docx-generator';
+import { generateFullDocx } from '@/lib/client-docx-generator';
 
 type LayoutOptions = 2 | 4 | 6;
 
@@ -134,25 +134,16 @@ export default function Home() {
     });
   
     try {
-      const sectionPromises: Promise<string>[] = [];
-  
+      const canvasDataUrls: string[] = [];
       for (let i = 0; i < totalPages; i++) {
-        toast({
-          id: toastId,
-          title: 'Generando documento...',
-          description: `Procesando página ${i + 1} de ${totalPages}...`,
-        });
-  
         const dataUrl = collagePreviewRef.current.getCanvasDataUrl(i);
         if (dataUrl) {
-          sectionPromises.push(generateDocxPage(dataUrl, i, totalPages));
+          canvasDataUrls.push(dataUrl);
         }
       }
   
-      const sectionStrings = await Promise.all(sectionPromises);
-      
-      if (sectionStrings.length > 0) {
-        const blob = await generateDocxFromSections(sectionStrings);
+      if (canvasDataUrls.length > 0) {
+        const blob = await generateFullDocx(canvasDataUrls);
         saveAs(blob, 'Mosaico-de-Fotos.docx');
   
         toast({ 
