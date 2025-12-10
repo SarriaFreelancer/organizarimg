@@ -20,26 +20,26 @@ import { Document, Packer, ISectionOptions } from 'docx';
 
 type LayoutOptions = 2 | 4 | 6;
 
-async function getLayoutRecommendation(photoCount: number): Promise<2 | 4 | 6 | null> {
+function getFallbackLayout(photoCount: number): LayoutOptions {
+    if (photoCount <= 4) return 2;
+    if (photoCount <= 8) return 4;
+    return 6;
+}
+
+async function getLayoutRecommendation(photoCount: number): Promise<LayoutOptions> {
   if (photoCount === 0) {
-    return null;
+    return 4; // Default layout
   }
   try {
     const result = await recommendImageLayout({ numberOfPhotos: photoCount });
     const imagesPerPage = result.imagesPerPage;
     if ([2, 4, 6].includes(imagesPerPage)) {
-        return imagesPerPage as 2 | 4 | 6;
+        return imagesPerPage as LayoutOptions;
     }
-    // Fallback if AI returns an invalid number
-    if (photoCount <= 4) return 2;
-    if (photoCount <= 8) return 4;
-    return 6;
+    return getFallbackLayout(photoCount);
   } catch (error) {
-    console.error("Error al obtener la recomendación de diseño:", error);
-    // Fallback logic in case of AI failure
-    if (photoCount <= 4) return 2;
-    if (photoCount <= 8) return 4;
-    return 6;
+    console.error("Error al obtener la recomendación de diseño, usando fallback:", error);
+    return getFallbackLayout(photoCount);
   }
 }
 
@@ -104,31 +104,21 @@ export default function Home() {
     if (debouncedImageCount > 0) {
       setIsAiLoading(true);
       startTransition(async () => {
-        try {
-          const recommendation = await getLayoutRecommendation(debouncedImageCount);
-          if (recommendation && [2, 4, 6].includes(recommendation)) {
-            const recommended = recommendation as LayoutOptions;
-            setRecommendedLayout(recommended);
-            setLayout(recommended);
-            toast({
-              title: "Sugerencia de la IA",
-              description: `Sugerimos un diseño de ${recommended} fotos para tus ${debouncedImageCount} imágenes.`,
-            });
-          }
-        } catch (error) {
-          console.error("Falló la recomendación de la IA:", error);
+        const recommendation = await getLayoutRecommendation(debouncedImageCount);
+        if (recommendation && recommendation !== recommendedLayout) {
+          setRecommendedLayout(recommendation);
+          setLayout(recommendation);
           toast({
-            variant: "destructive",
-            title: "Error de la IA",
-            description: "No se pudo obtener la sugerencia. Es posible que se haya excedido la cuota de la API.",
+            title: "Sugerencia de la IA",
+            description: `Sugerimos un diseño de ${recommendation} fotos para tus ${debouncedImageCount} imágenes.`,
           });
-        } finally {
-          setIsAiLoading(false);
         }
+        setIsAiLoading(false);
       });
     } else {
       setRecommendedLayout(null);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedImageCount, toast]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -370,5 +360,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
