@@ -3,7 +3,6 @@
 
 import React, { useState, useRef, useEffect, useTransition } from 'react';
 import Image from 'next/image';
-import { recommendImageLayout } from "@/ai/flows/ai-powered-layout-recommendation";
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -20,29 +19,10 @@ import { Document, Packer, ISectionOptions } from 'docx';
 
 type LayoutOptions = 2 | 4 | 6;
 
-function getFallbackLayout(photoCount: number): LayoutOptions {
+function getLayoutRecommendation(photoCount: number): LayoutOptions {
     if (photoCount <= 4) return 2;
     if (photoCount <= 8) return 4;
     return 6;
-}
-
-async function getLayoutRecommendation(photoCount: number): Promise<LayoutOptions> {
-  if (photoCount === 0) {
-    return 4; // Default layout
-  }
-  try {
-    const result = await recommendImageLayout({ numberOfPhotos: photoCount });
-    const imagesPerPage = result.imagesPerPage;
-    if ([2, 4, 6].includes(imagesPerPage)) {
-        return imagesPerPage as LayoutOptions;
-    }
-    // Si la IA devuelve algo inesperado, usamos el fallback.
-    return getFallbackLayout(photoCount);
-  } catch (error) {
-    console.error("Error al obtener la recomendación de diseño, usando fallback:", error);
-    // Si la llamada a la API falla, usamos el fallback.
-    return getFallbackLayout(photoCount);
-  }
 }
 
 function dataUrlToArrayBuffer(dataUrl: string): ArrayBuffer {
@@ -104,29 +84,11 @@ export default function Home() {
 
   useEffect(() => {
     if (debouncedImageCount > 0) {
-      setIsAiLoading(true);
-      startTransition(async () => {
-        try {
-            const recommendation = await getLayoutRecommendation(debouncedImageCount);
-            if (recommendation && recommendation !== layout) {
-                setRecommendedLayout(recommendation);
-                setLayout(recommendation);
-                toast({
-                    title: "Sugerencia de la IA",
-                    description: `Sugerimos un diseño de ${recommendation} fotos para tus ${debouncedImageCount} imágenes.`,
-                });
-            }
-        } catch (error) {
-            // El error ya se maneja dentro de getLayoutRecommendation, que devuelve un fallback.
-            // Aquí podríamos mostrar una notificación si quisiéramos, pero por ahora es silencioso.
-            const fallbackLayout = getFallbackLayout(debouncedImageCount);
-            if (fallbackLayout !== layout) {
-                 setLayout(fallbackLayout);
-            }
-        } finally {
-            setIsAiLoading(false);
+        const recommendation = getLayoutRecommendation(debouncedImageCount);
+        if (recommendation && recommendation !== layout) {
+            setRecommendedLayout(recommendation);
+            setLayout(recommendation);
         }
-      });
     } else {
       setRecommendedLayout(null);
     }
@@ -372,3 +334,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
