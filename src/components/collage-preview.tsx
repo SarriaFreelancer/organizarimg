@@ -26,7 +26,8 @@ const drawPage = (
   ctx: CanvasRenderingContext2D,
   imagesForPage: HTMLImageElement[],
   layout: LayoutOptions,
-  pageNumber: number
+  pageNumber: number,
+  isLastPage: boolean
 ) => {
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -53,6 +54,11 @@ const drawPage = (
       const imageIndexInAll = pageNumber * layout + i;
       const img = imagesForPage[i];
       
+      // En la última página, solo dibujar la celda si hay una imagen para ella.
+      if (isLastPage && !img) {
+          continue;
+      }
+
       const x = leftPad + c * (cellW + gap);
       const y = topPad + r * (cellH + gap);
       
@@ -72,7 +78,7 @@ const drawPage = (
       ctx.font = '12px Inter, sans-serif';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(`Registro Fotográfico N°${imageIndexInAll + 1}`, x + 9, y + titleHeight / 2);
+      ctx.fillText(`Foto N°${imageIndexInAll + 1}`, x + 9, y + titleHeight / 2);
 
       const imgContainerY = y + titleHeight;
       const imgContainerH = cellH - titleHeight;
@@ -80,6 +86,7 @@ const drawPage = (
       if (img && img.complete && img.naturalWidth > 0) {
         drawImageCover(ctx, img, x, imgContainerY, cellW, imgContainerH);
       } else {
+        // Esta parte ahora solo se ejecutará para las páginas que no son la última.
         drawPlaceholder(ctx, x, imgContainerY, cellW, imgContainerH, `Imagen ${imageIndexInAll + 1}`);
       }
     }
@@ -115,7 +122,8 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
         const ctx = canvas.getContext('2d');
         if (ctx) {
             const imagesForPage = pages[pageIndex] || [];
-            drawPage(ctx, imagesForPage, layout, pageIndex);
+            const isLastPage = pageIndex === totalPages - 1;
+            drawPage(ctx, imagesForPage, layout, pageIndex, isLastPage);
         }
 
         return canvas.toDataURL('image/png', 1.0);
@@ -130,11 +138,12 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
         if (canvas) {
           const ctx = canvas.getContext('2d');
           if (ctx) {
-            drawPage(ctx, imagesForPage, layout, i);
+            const isLastPage = i === totalPages - 1;
+            drawPage(ctx, imagesForPage, layout, i, isLastPage);
           }
         }
       });
-    }, [pages, layout, images, isClient]);
+    }, [pages, layout, images, isClient, totalPages]);
 
     useEffect(() => {
       if (!api) return;
@@ -186,7 +195,8 @@ const CollagePreview = forwardRef<CollagePreviewHandles, CollagePreviewProps>(
               <Card className="shadow-lg overflow-hidden">
                 <CardContent className="p-0">
                   <canvas
-                    ref={el => canvasRefs.current[index] = el}
+                    //ref={el => canvasRefs.current[index] = el}
+                    ref={el => { canvasRefs.current[index] = el; }}
                     width={CANVAS_WIDTH}
                     height={CANVAS_HEIGHT}
                     className="w-full h-auto"

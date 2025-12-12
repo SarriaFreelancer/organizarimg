@@ -211,7 +211,7 @@ export default function Home() {
           properties: {
             page: {
               size: { width: PAGE_WIDTH_TWIPS, height: PAGE_HEIGHT_TWIPS },
-              orientation: docx.PageOrientation.LANDSCAPE,
+              //orientation: docx.PageOrientation.LANDSCAPE,
               margin: { top: MARGIN_TWIPS, right: MARGIN_TWIPS, bottom: MARGIN_TWIPS, left: MARGIN_TWIPS },
             },
           },
