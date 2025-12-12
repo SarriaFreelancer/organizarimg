@@ -54,7 +54,6 @@ const drawPage = (
       const imageIndexInAll = pageNumber * layout + i;
       const img = imagesForPage[i];
       
-      // En la última página, solo dibujar la celda si hay una imagen para ella.
       if (isLastPage && !img) {
           continue;
       }
@@ -68,17 +67,17 @@ const drawPage = (
       ctx.lineWidth = 1;
       ctx.strokeRect(x + 0.5, y + 0.5, cellW - 1, cellH - 1);
 
-      const titleHeight = 28;
+      const titleHeight = 32;
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(x, y, cellW, titleHeight);
       ctx.strokeStyle = '#bdbdbd';
       ctx.lineWidth = 0.5;
       ctx.strokeRect(x + 0.5, y + 0.5, cellW - 1, titleHeight - 1);
       ctx.fillStyle = '#111827';
-      ctx.font = '12px Inter, sans-serif';
+      ctx.font = '14px Inter, sans-serif';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(`Foto N°${imageIndexInAll + 1}`, x + 9, y + titleHeight / 2);
+      ctx.fillText(`Foto N°${imageIndexInAll + 1}`, x + 12, y + titleHeight / 2);
 
       const imgContainerY = y + titleHeight;
       const imgContainerH = cellH - titleHeight;
@@ -86,7 +85,6 @@ const drawPage = (
       if (img && img.complete && img.naturalWidth > 0) {
         drawImageCover(ctx, img, x, imgContainerY, cellW, imgContainerH);
       } else {
-        // Esta parte ahora solo se ejecutará para las páginas que no son la última.
         drawPlaceholder(ctx, x, imgContainerY, cellW, imgContainerH, `Imagen ${imageIndexInAll + 1}`);
       }
     }
